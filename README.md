@@ -55,6 +55,7 @@
 | 归档 | 论文 | 一句话总结 |
 |---|---|---|
 | 2026/08 | [ViT](./2026/08/vit-paper/精读笔记/README.md)（An Image is Worth 16×16 Words, ICLR 2021） | 大规模训练，能够战胜归纳偏置 |
+| 2026/08 | [DeiT](./2026/08/deit-paper/精读笔记/README.md)（Training Data-Efficient Image Transformers, ICML 2021） | 没有大数据时：借配方（强增强）+ 借先验（蒸馏 token），单机 3 天训出能打的 ViT |
 
 ## 🗺️ 阅读路线图
 

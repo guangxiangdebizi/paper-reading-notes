@@ -32,7 +32,7 @@
 | # | 论文 | 发表 | 一句话 | 状态 |
 |---|---|---|---|---|
 | 0 | **ViT**：An Image is Worth 16×16 Words | ICLR 2021 | 纯 Transformer 做视觉；大数据战胜归纳偏置 | ✅ 已读（[笔记](./2026/08/vit-paper/精读笔记/README.md)） |
-| 1 | **DeiT**：Training Data-Efficient Image Transformers & Distillation | ICML 2021 | 知识蒸馏 token，**只在 ImageNet 上**就把 ViT 教明白 | 🔄 进行中 |
+| 1 | **DeiT**：Training Data-Efficient Image Transformers & Distillation | ICML 2021 | 知识蒸馏 token，**只在 ImageNet 上**就把 ViT 教明白 | ✅ 已读（[笔记](./2026/08/deit-paper/精读笔记/README.md)） |
 | 2 | **ConvNeXt**：A ConvNet for the 2020s | CVPR 2022 | 对照组：拿 ViT 的训练配方武装 CNN，"现代 CNN"的反击 | ⏳ 待读 |
 
 ### 主线 B：架构演进（从分类到通用骨干网）
@@ -57,7 +57,7 @@
 | 归档 | 论文 | 一句话收获 |
 |---|---|---|
 | [2026/08/vit-paper](./2026/08/vit-paper/精读笔记/README.md) | ViT | 大规模训练战胜归纳偏置；纯 Transformer 可行且算力效率高 |
-| 待归档 | DeiT | —— |
+| [2026/08/deit-paper](./2026/08/deit-paper/精读笔记/README.md) | DeiT | 架构不变，靠 CNN 时代配方（强增强）+ 蒸馏 token 借归纳偏置，单机 ImageNet 训出 85.2% |
 
 ---
 
