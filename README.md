@@ -56,6 +56,10 @@
 |---|---|---|
 | 2026/08 | [ViT](./2026/08/vit-paper/精读笔记/README.md)（An Image is Worth 16×16 Words, ICLR 2021） | 大规模训练，能够战胜归纳偏置 |
 
+## 🗺️ 阅读路线图
+
+- [ViT 分支阅读路线图](./ViT分支阅读路线图.md)：以 ViT 为根的整条脉络（DeiT → ConvNeXt → Swin → DETR → MAE），含各篇因果链与进度。
+
 ---
 
 ## 🔒 其他约定
