@@ -2,6 +2,7 @@
 
 > 以 **Vision Transformer（ViT, ICLR 2021）** 为根的一条大分支：从"纯 Transformer 进入视觉"出发，沿三条主线把这条脉络读完。
 > 本文档随精读进度维护：读完一篇就在状态列打勾，并在下方"精读记录"补一行链接。
+> **下游拓展**：核心六篇之外的 ViT 家族后续演进（2022–2026）统一登记在《[ViT 家族拓展阅读路线图](./ViT家族拓展阅读路线图.md)》，主线六篇读完后按该图继续。
 
 ---
 
@@ -48,7 +49,7 @@
 |---|---|---|---|---|
 | 5 | **MAE**：Masked Autoencoders Are Scalable Vision Learners | CVPR 2022 | 遮 75% 的 patch 重建像素，75% 算力省出来的自监督 | ⏳ 待读 |
 
-> 🕳️ 先记在"未来再说"坑里的：BEiT（遮块预测离散 token）、Segmentation Transformer 系（SETR 等）、Scaling Law 系（ViT-22B 等）、多模态系（CLIP 等）。这条分支读完再开新图。
+> 🕳️ 先记在"未来再说"坑里的：BEiT（遮块预测离散 token）、Segmentation Transformer 系（SETR 等）、Scaling Law 系（ViT-22B 等）、多模态系（CLIP 等）。其中 BEiT、ViT-22B、CLIP 系已于 2026-08-12 纳入《[ViT 家族拓展阅读路线图](./ViT家族拓展阅读路线图.md)》统一登记；这条主线六篇读完后按该图继续拓展。
 
 ---
 
