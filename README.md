@@ -57,6 +57,7 @@
 | 2026/08 | [ViT](./2026/08/vit-paper/精读笔记/README.md)（An Image is Worth 16×16 Words, ICLR 2021） | 大规模训练，能够战胜归纳偏置 |
 | 2026/08 | [DeiT](./2026/08/deit-paper/精读笔记/README.md)（Training Data-Efficient Image Transformers, ICML 2021） | 没有大数据时：借配方（强增强）+ 借先验（蒸馏 token），单机 3 天训出能打的 ViT |
 | 2026/08 | [RAFT](./2026/08/raft-paper/精读笔记/README.md)（Recurrent All-Pairs Field Transforms for Optical Flow, ECCV 2020 Best Paper） | 把经典光流优化翻译成端到端网络：特征、先验、下降方向全部学出来；循环查表，单一分辨率流场 |
+| 2026/08 | [ConvNeXt](./2026/08/convnext-paper/精读笔记/README.md)（A ConvNet for the 2020s, CVPR 2022） | 不引入注意力，仅用 Transformer 时代的训练配方与设计逐项翻新 ResNet，得到的纯 ConvNet 反超 Swin：ViT 与 CNN 的差距里，配方与设计占大头 |
 
 ## 🗺️ 阅读路线图
 

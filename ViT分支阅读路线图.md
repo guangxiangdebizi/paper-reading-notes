@@ -35,7 +35,7 @@
 |---|---|---|---|---|
 | 0 | **ViT**：An Image is Worth 16×16 Words | ICLR 2021 | 纯 Transformer 做视觉；大数据战胜归纳偏置 | ✅ 已读（[笔记](./2026/08/vit-paper/精读笔记/README.md)） |
 | 1 | **DeiT**：Training Data-Efficient Image Transformers & Distillation | ICML 2021 | 知识蒸馏 token，**只在 ImageNet 上**就把 ViT 教明白 | ✅ 已读（[笔记](./2026/08/deit-paper/精读笔记/README.md)） |
-| 2 | **ConvNeXt**：A ConvNet for the 2020s | CVPR 2022 | 对照组：拿 ViT 的训练配方武装 CNN，"现代 CNN"的反击 | ⏳ 待读 |
+| 2 | **ConvNeXt**：A ConvNet for the 2020s | CVPR 2022 | 对照组：拿 ViT 的训练配方武装 CNN，"现代 CNN"的反击 | ✅ 已读（[笔记](./2026/08/convnext-paper/精读笔记/README.md)） |
 
 ### 主线 B：架构演进（从分类到通用骨干网）
 
@@ -67,6 +67,7 @@
 |---|---|---|
 | [2026/08/vit-paper](./2026/08/vit-paper/精读笔记/README.md) | ViT | 大规模训练战胜归纳偏置；纯 Transformer 可行且算力效率高 |
 | [2026/08/deit-paper](./2026/08/deit-paper/精读笔记/README.md) | DeiT | 架构不变，靠 CNN 时代配方（强增强）+ 蒸馏 token 借归纳偏置，单机 ImageNet 训出 85.2% |
+| [2026/08/convnext-paper](./2026/08/convnext-paper/精读笔记/README.md) | ConvNeXt | 零注意力逐步翻新 ResNet（配方 +2.7、减法设计、7×7 即饱和），纯 ConvNet 反超 Swin：性能差距的大头在配方与设计，不在注意力 |
 
 ---
 
@@ -74,7 +75,7 @@
 
 1. **ViT** 证明纯 Transformer 可行，但留下最大短板：**要 JFT-300M 这种私有大数据**，普通人用不起。
 2. **DeiT** 正面回答这个短板：用蒸馏 + 强数据增强，**只用公开 ImageNet** 就训出能打的 ViT —— 民主化。
-3. **ConvNeXt** 是精彩的对照组：ViT 赢了，到底是"注意力机制"赢了，还是"训练配方"赢了？ConvNeXt 证明配方本身价值连城。
+3. **ConvNeXt** 是精彩的对照组：ViT 赢了，到底是"注意力机制"赢了，还是"训练配方"赢了？ConvNeXt 证明配方本身价值连城。主线 A 至此闭环：**数据民主化（DeiT）与归因澄清（ConvNeXt）双双完成**，下一篇回到主线 B 的 Swin。
 4. **Swin** 回答另一个短板：ViT 的全局注意力又贵又只能做分类；Swin 用窗口+层次让它**便宜且能接检测/分割**。
 5. **DETR** 展示 Transformer 改写检测任务本身（集合预测），与 Swin 骨干网结合就是今天的检测主流。
 6. **MAE** 回到 ViT §4.6 那个 79.9% 的初步实验，把"遮块重建"做成可扩展的自监督范式，闭环。
