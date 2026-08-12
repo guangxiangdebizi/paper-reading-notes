@@ -5,6 +5,7 @@
 >
 > 原稿 PDF：`../DeiT_2012.12877.pdf`（22 页，含附录）
 > 全文文本：`../DeiT_fulltext.txt`
+> 图片：`../figures/`（Figure 1–3 整页渲染，含蒸馏 token 架构图 fig3）
 >
 > 在 ViT 分支中的位置：**第 2 篇**。ViT 说"没大数据不行"，DeiT 说"那是配方问题"。
 

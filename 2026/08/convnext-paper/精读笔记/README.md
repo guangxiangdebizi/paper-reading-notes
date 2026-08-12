@@ -5,6 +5,7 @@
 >
 > 原稿 PDF：`../ConvNeXt_2201.03545.pdf`（15 页）
 > 全文文本：`../ConvNeXt_fulltext.txt`
+> 图片：`../figures/`（Figure 1–4 整页渲染，含翻新轨迹图 fig2、块结构对比图 fig4）
 >
 > 在 ViT 分支中的位置：**主线 A（效率/数据民主化）第 3 站**——ViT、DeiT 之后的"对照组"（CNN 的反击）。
 >
