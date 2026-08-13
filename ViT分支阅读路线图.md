@@ -41,7 +41,7 @@
 
 | # | 论文 | 发表 | 一句话 | 状态 |
 |---|---|---|---|---|
-| 3 | **Swin**：Hierarchical Vision Transformer using Shifted Windows | ICCV 2021 | 窗口注意力 + 层次结构，ViT 变成通用骨干网 | ⏳ 待读 |
+| 3 | **Swin**：Hierarchical Vision Transformer using Shifted Windows | ICCV 2021 | 窗口注意力 + 层次结构，ViT 变成通用骨干网 | ✅ 已读（[笔记](./2026/08/swin-paper/精读笔记/README.md)） |
 | 4 | **DETR**：End-to-End Object Detection with Transformers | ECCV 2020 | 去掉 anchor/NMS，集合预测做检测 | ⏳ 待读 |
 
 ### 主线 C：自监督（ViT §4.6 埋下的种子）
@@ -68,6 +68,7 @@
 | [2026/08/vit-paper](./2026/08/vit-paper/精读笔记/README.md) | ViT | 大规模训练战胜归纳偏置；纯 Transformer 可行且算力效率高 |
 | [2026/08/deit-paper](./2026/08/deit-paper/精读笔记/README.md) | DeiT | 架构不变，靠 CNN 时代配方（强增强）+ 蒸馏 token 借归纳偏置，单机 ImageNet 训出 85.2% |
 | [2026/08/convnext-paper](./2026/08/convnext-paper/精读笔记/README.md) | ConvNeXt | 零注意力逐步翻新 ResNet（配方 +2.7、减法设计、7×7 即饱和），纯 ConvNet 反超 Swin：性能差距的大头在配方与设计，不在注意力 |
+| [2026/08/swin-paper](./2026/08/swin-paper/精读笔记/README.md) | Swin | 窗口内局部注意力（线性复杂度）+ patch merging 层级化 + 移位窗口保流通，ViT 变成检测/分割通吃的通用骨干网；任务越密集优势越大（分割 +5.3 mIoU），组织方案输出给 all-MLP 也赢 |
 
 ---
 
