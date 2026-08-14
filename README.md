@@ -67,6 +67,7 @@
 | 2026/08 | [RAFT](./2026/08/raft-paper/精读笔记/README.md)（Recurrent All-Pairs Field Transforms for Optical Flow, ECCV 2020 Best Paper） | 把经典光流优化翻译成端到端网络：特征、先验、下降方向全部学出来；循环查表，单一分辨率流场 |
 | 2026/08 | [ConvNeXt](./2026/08/convnext-paper/精读笔记/README.md)（A ConvNet for the 2020s, CVPR 2022） | 不引入注意力，仅用 Transformer 时代的训练配方与设计逐项翻新 ResNet，得到的纯 ConvNet 反超 Swin：ViT 与 CNN 的差距里，配方与设计占大头 |
 | 2026/08 | [Swin](./2026/08/swin-paper/精读笔记/README.md)（Hierarchical Vision Transformer using Shifted Windows, ICCV 2021 Marr Prize） | 窗口内局部注意力（线性复杂度）+ patch merging 层级化 + 移位窗口保流通：ViT 从分类样板间变成检测/分割通吃的通用骨干网，COCO/ADE20K 双 SOTA，且任务越密集优势越大 |
+| 2026/08 | [DETR](./2026/08/detr-paper/精读笔记/README.md)（End-to-End Object Detection with Transformers, ECCV 2020） | 检测 = 直接集合预测：N 个可学习 object queries 并行输出 + 匈牙利一对一匹配损失，去 anchor/NMS，首次端到端打平加强版 Faster R-CNN（大目标 +7.8、小目标 -5.5），并顺手拿下全景分割 PQ 第一 |
 
 ## 🗺️ 阅读路线图
 

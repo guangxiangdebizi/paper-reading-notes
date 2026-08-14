@@ -42,7 +42,7 @@
 | # | 论文 | 发表 | 一句话 | 状态 |
 |---|---|---|---|---|
 | 3 | **Swin**：Hierarchical Vision Transformer using Shifted Windows | ICCV 2021 | 窗口注意力 + 层次结构，ViT 变成通用骨干网 | ✅ 已读（[笔记](./2026/08/swin-paper/精读笔记/README.md)） |
-| 4 | **DETR**：End-to-End Object Detection with Transformers | ECCV 2020 | 去掉 anchor/NMS，集合预测做检测 | ⏳ 待读 |
+| 4 | **DETR**：End-to-End Object Detection with Transformers | ECCV 2020 | 去掉 anchor/NMS，集合预测做检测 | ✅ 已读（[笔记](./2026/08/detr-paper/精读笔记/README.md)） |
 
 ### 主线 C：自监督（ViT §4.6 埋下的种子）
 
@@ -69,6 +69,7 @@
 | [2026/08/deit-paper](./2026/08/deit-paper/精读笔记/README.md) | DeiT | 架构不变，靠 CNN 时代配方（强增强）+ 蒸馏 token 借归纳偏置，单机 ImageNet 训出 85.2% |
 | [2026/08/convnext-paper](./2026/08/convnext-paper/精读笔记/README.md) | ConvNeXt | 零注意力逐步翻新 ResNet（配方 +2.7、减法设计、7×7 即饱和），纯 ConvNet 反超 Swin：性能差距的大头在配方与设计，不在注意力 |
 | [2026/08/swin-paper](./2026/08/swin-paper/精读笔记/README.md) | Swin | 窗口内局部注意力（线性复杂度）+ patch merging 层级化 + 移位窗口保流通，ViT 变成检测/分割通吃的通用骨干网；任务越密集优势越大（分割 +5.3 mIoU），组织方案输出给 all-MLP 也赢 |
+| [2026/08/detr-paper](./2026/08/detr-paper/精读笔记/README.md) | DETR | 检测 = 直接集合预测：N=100 个可学习 object queries 并行输出 + 匈牙利一对一匹配损失，去 anchor/NMS 首次端到端打平加强版 Faster R-CNN（42.0 AP，大目标 +7.8、小目标 -5.5）；全景分割 PQ 登顶；留下收敛慢（500 epoch）与小目标两大痛点待后续攻克 |
 
 ---
 
@@ -78,7 +79,7 @@
 2. **DeiT** 正面回答这个短板：用蒸馏 + 强数据增强，**只用公开 ImageNet** 就训出能打的 ViT —— 民主化。
 3. **ConvNeXt** 是精彩的对照组：ViT 赢了，到底是"注意力机制"赢了，还是"训练配方"赢了？ConvNeXt 证明配方本身价值连城。主线 A 至此闭环：**数据民主化（DeiT）与归因澄清（ConvNeXt）双双完成**，下一篇回到主线 B 的 Swin。
 4. **Swin** 回答另一个短板：ViT 的全局注意力又贵又只能做分类；Swin 用窗口+层次让它**便宜且能接检测/分割**。
-5. **DETR** 展示 Transformer 改写检测任务本身（集合预测），与 Swin 骨干网结合就是今天的检测主流。
+5. **DETR** 展示 Transformer 改写检测任务本身（集合预测），与 Swin 骨干网结合就是今天的检测主流。读完确认：端到端的代价（500 epoch 收敛、小目标弱）被论文自己列成清单，后续 Deformable DETR 系工作逐一攻克——详见拓展阅读路线图。
 6. **MAE** 回到 ViT §4.6 那个 79.9% 的初步实验，把"遮块重建"做成可扩展的自监督范式，闭环。
 7. **Registers** 提出主线 D 的起点问题：ViT 跑起来之后，CLS token 到底是怎么聚合全局信息的？大规模预训练模型的 patch 特征图里普遍存在 artifact 高响应区（尤其在 DINOv2 类自监督模型上最刺眼），根因是模型拿少数高范数的"垃圾 token"充当注意力的垃圾桶——加几个可学习的 register token 接住它们，特征图立刻干净。这篇回答了"CLS token 的聚合行为有毛病，而且可以修"。
 8. **LAST-ViT** 顺着 Registers 继续追问：register 只是把症状压住，**毛病的根源是什么**？答案是"懒惰聚合"——在全局注意力 + 粗粒度语义监督（一张图一个标签）下，ViT 学会了走捷径：把语义无关的背景 patch 当成表示全局语义的跳板，CLS token 因此被背景污染。解法是用频域 token 选择替代标准 CLS token，只让语义相关的 patch 参与全局聚合；标签、文本、自监督三种范式下 12 个 benchmark 一致提升。主线 D 至此完成"发现症状（Registers）→ 解释病因并对症修正（LAST-ViT）"的闭环。
