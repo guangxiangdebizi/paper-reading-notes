@@ -74,8 +74,8 @@
 - [ViT 分支阅读路线图](./ViT分支阅读路线图.md)：以 ViT 为根的整条脉络，四条主线（DeiT → ConvNeXt / Swin → DETR / MAE / Registers → LAST-ViT），含各篇因果链与进度。
 - [ViT 家族拓展阅读路线图](./ViT家族拓展阅读路线图.md)：主线读完后的下游拓展（2022–2026），按架构演进/自监督/多模态基础模型/Scaling/挑战者五条支线登记，共 36 篇候选，仅登记清单、暂不精读。
 - [视频抽帧压帧分支阅读路线图](./视频抽帧压帧分支阅读路线图.md)：把一整段视频变成几张有信息量的图片——镜头检测 → 光流 → 冗余剔除 → 关键帧/视频摘要 → 神经压缩 → VLM 帧采样，含顶会顶刊与阅读顺序。
-- [小模型vs大模型阅读链路](./小模型vs大模型阅读链路.md)：源自"过拟合与数据规模"讨论的独立链路——scaling law / 双下降 → 蒸馏与合成数据 → 算力分配 → benchmark 幻觉 → 剪枝冗余，共 14 篇候选、五个站点，将"条件拉齐则大模型必赢"立为阅读假设，逐篇验证。
-- [LLM 分支阅读路线图](./LLM分支阅读路线图.md)：以《LLMs can't jump》（Zahavy, Google DeepMind, 2026）为正主的"LLM 科学发现能力边界"链路——压缩进步论 → ARC Prize → AI Scientist / AlphaEvolve 压力测试 → 正主的溯因跳跃判决 → Genie 世界模型处方与 Si et al. 实证对位，共 7 篇，附正主身份多渠道核查记录（载体为 PhilSci-Archive，arXiv API 检索不到）。
+- [小模型vs大模型阅读链路](./小模型vs大模型阅读链路.md)：源自"过拟合与数据规模"讨论的独立链路——scaling law / 双下降 → 蒸馏与合成数据 → 算力分配 → benchmark 幻觉 → 剪枝冗余，清单只收顶会顶刊（9 篇），预印本与 workshop 文献归入背景文献供查证；将"条件拉齐则大模型必赢"立为阅读假设，逐篇验证。
+- [LLM 分支阅读路线图](./LLM分支阅读路线图.md)：以《LLMs can't jump》（Zahavy, Google DeepMind, 2026）为正主的"LLM 科学发现能力边界"链路——清单只收顶会顶刊（Si et al. ICLR 2025、Genie ICML 2024 两篇），正主与压力测试标本（AI Scientist、AlphaEvolve 等非顶会文献）归入背景文献供查证，附正主身份多渠道核查记录与 venue 复核记录。
 
 ---
 

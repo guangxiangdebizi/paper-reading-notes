@@ -1,9 +1,10 @@
 # 小模型 vs 大模型阅读链路
 
 > 定位：一条独立于 ViT 谱系的阅读链路，源自一次关于"过拟合与数据规模"的讨论，终点问题为：**小模型凭什么在 benchmark 上媲美乃至超越大模型？**
-> 本图按因果链组织 **14 篇候选论文、五个站点**，并将链路终点结论立为"阅读假设"——后续每篇精读都是对该假设某一环节的验证或证伪。
+> 本图按因果链组织 **9 篇顶会候选论文、五个站点**，并将链路终点结论立为"阅读假设"——后续每篇精读都是对该假设某一环节的验证或证伪。
 > 本图只做清单登记与阅读排序，**不建精读笔记归档**；某篇确定精读时，再按仓库规则建 `<年份>/<月份>/<论文名>/` 归档目录，并把该条目从本图迁出、记入"精读记录"。
-> 表内 arXiv 编号与发表 venue 已于 2026-08-13 逐条核对（检索过程与更正记录见文末"文献核查记录"）。
+> 表内 arXiv 编号与发表 venue 已于 2026-08-13 逐条核对，2026-08-14 又经 DBLP 全量复核（检索过程与更正记录见文末"文献核查记录"）。
+> **登记规则（2026-08-14 使用方要求）**：阅读清单只登记**顶会/顶刊**论文；未发表（预印本）或二区三流 venue 的文献一律移入"背景文献"小节，不占精读配额。本轮经 DBLP 复核，原有 14 篇中 8 篇（Hinton 蒸馏 workshop、DistilBERT workshop、Phi-1/phi-1.5/Kaplan/LLaMA 预印本、Chinchilla 预印本、BenBench 预印本）移出清单，另以 3 篇顶会论文补位（Born-Again、MiniLM、Beyond Chinchilla-Optimal；详见核查记录第四轮）。
 
 ---
 
@@ -27,62 +28,73 @@
 站 1 理论地基    站 2 蒸馏与      站 3 算力分配    站 4 评测      站 5 剪枝与
 （容量与泛化     知识压缩         之争            幻觉           参数冗余
  到底怎么算）   （吃嚼过的知识）  （大模型欠训？） （benchmark   （雕刻出
- Scaling law /  Hinton →         Chinchilla →     是不是可被     稀疏子网络）
- Double descent DistilBERT →     LLaMA →          定向过拟合？）  Lottery Ticket
-                Phi-1            数据受限 scaling  GSM-Symbolic → → Renda
-                                                  BenBench
+ Scaling law /  Born-Again →     Beyond           是不是可被     稀疏子网络）
+ Double descent MiniLM →         Chinchilla-      定向过拟合？）  Lottery Ticket
+ (背景:Kaplan/  (背景:Hinton/    Optimal →        GSM-Symbolic → → Renda
+  Hinton/Phi)   DistilBERT/Phi)  Scaling Data-    (背景:BenBench)
+                                 Constrained
 ```
 
 **站点间的因果链**：
 
-1. **站 1** 先立地基：loss 随参数量、数据量、算力幂律下降（Kaplan）；但"拟合得越好泛化越差"的经典直觉在插值区域失效，出现 double descent（Nakkiran、Belkin）——这是整条链路讨论"充分拟合何时安全"的理论前提。
-2. **站 2** 回答"小模型的知识从哪来"：软标签蒸馏（Hinton）→ 工程落地（DistilBERT）→ LLM 时代把"蒸馏"升级为"用大模型生成教科书级合成数据"（Phi-1、phi-1.5）。这条路径的代价是知识源头即大模型，学生上限被老师锁死。
-3. **站 3** 处理"大模型自己没喂饱"的反例：Chinchilla 证明参数量与 token 数应 1:1 同扩、此前大模型普遍欠训练；LLaMA 用小模型配足 token 实践该结论；数据受限 scaling（Muennighoff）进一步给出数据质量与重复次数的权衡。
-4. **站 4** 处理"假赢"：GSM-Symbolic 证明仅改写题目表面措辞即可大幅拉低数学基准分数——高分里有多少是对评测分布的过拟合？BenBench 系统检测训练语料对 benchmark 的泄漏。
+1. **站 1** 先立地基：loss 随参数量、数据量、算力幂律下降（背景：Kaplan 技术报告）；但"拟合得越好泛化越差"的经典直觉在插值区域失效，出现 double descent（Nakkiran、Belkin）——这是整条链路讨论"充分拟合何时安全"的理论前提。
+2. **站 2** 回答"小模型的知识从哪来"：蒸馏的自迭代（Born-Again）与注意力层蒸馏（MiniLM）两篇顶会论文为主角；蒸馏开山（Hinton，workshop）、工程落地范本（DistilBERT，workshop）与"用大模型生成教科书级合成数据"（Phi-1，技术报告）作为背景文献。这条路径的代价是知识源头即大模型，学生上限被老师锁死。
+3. **站 3** 处理"大模型自己没喂饱"的反例：Chinchilla 证明参数量与 token 数应 1:1 同扩、此前大模型普遍欠训练（背景：预印本，另有 LLaMA 技术报告为实践案例）；本清单以两篇顶会论文承接该问题——Beyond Chinchilla-Optimal（ICML 2024）把推理成本纳入 scaling 预算，解释"为何实践中偏向小模型"；Scaling Data-Constrained（NeurIPS 2023）给出数据量受限下重复数据的边际递减与数据质量权衡。
+4. **站 4** 处理"假赢"：GSM-Symbolic 证明仅改写题目表面措辞即可大幅拉低数学基准分数——高分里有多少是对评测分布的过拟合？背景文献 BenBench（预印本）系统检测训练语料对 benchmark 的泄漏。
 5. **站 5** 处理"剪枝逆袭"的猜想：彩票假说证明大网络中存在可从头训练的稀疏子网（冗余是真实的）；但 Renda 等的系统比较显示，剪枝后微调很少打赢同尺寸从头训练的模型——"小模型雕刻得更完美"这一直觉在剪枝方向上基本不成立。
 
 ---
 
-## 📋 阅读清单
+## 📋 阅读清单（仅顶会/顶刊，共 9 篇）
 
 ### 站 1：理论地基——scaling law 与 double descent
 
 | # | 论文 | 发表 | arXiv | 一句话 | 状态 |
 |---|---|---|---|---|---|
-| 1 | **Scaling Laws for Neural Language Models**（Kaplan et al.） | arXiv 2020 | [2001.08361](https://arxiv.org/abs/2001.08361)（已核对） | loss 随参数量、数据量、算力呈幂律下降——"条件拉齐后大模型必赢"的定量基础 | ⏳ 待读 |
-| 2 | **Deep Double Descent: Where Bigger Models and More Data Hurt**（Nakkiran et al.） | ICLR 2020 | [1912.02292](https://arxiv.org/abs/1912.02292)（已核对） | 插值区域里"充分拟合"反而安全：过拟合致命性随容量/数据变化的完整曲线 | ⏳ 待读 |
-| 3 | **Reconciling modern machine learning practice and the classical bias-variance trade-off**（Belkin et al.） | PNAS 2019 | [1812.11118](https://arxiv.org/abs/1812.11118)（已核对） | 用偏差-方差框架重述双下降，给出"充分拟合何时安全"的经典统计解释 | ⏳ 待读 |
+| 1 | **Deep Double Descent: Where Bigger Models and More Data Hurt**（Nakkiran et al.） | ICLR 2020 | [1912.02292](https://arxiv.org/abs/1912.02292)（已核对） | 插值区域里"充分拟合"反而安全：过拟合致命性随容量/数据变化的完整曲线 | ⏳ 待读 |
+| 2 | **Reconciling modern machine learning practice and the classical bias-variance trade-off**（Belkin et al.） | PNAS 2019 | [1812.11118](https://arxiv.org/abs/1812.11118)（已核对） | 用偏差-方差框架重述双下降，给出"充分拟合何时安全"的经典统计解释 | ⏳ 待读 |
 
 ### 站 2：蒸馏与知识压缩（"吃大模型嚼过的知识"）
 
 | # | 论文 | 发表 | arXiv | 一句话 | 状态 |
 |---|---|---|---|---|---|
-| 4 | **Distilling the Knowledge in a Neural Network**（Hinton, Vinyals & Dean） | NIPS 2014 Workshop | [1503.02531](https://arxiv.org/abs/1503.02531)（已核对） | 蒸馏开山：大模型的软输出（概率分布）信息密度远高于 one-hot 标签 | ⏳ 待读 |
-| 5 | **DistilBERT**（Sanh et al.） | NeurIPS 2019 Workshop | [1910.01108](https://arxiv.org/abs/1910.01108)（已核对） | 蒸馏的工程落地范本：BERT 体积减 40%、速度提 60%，保留 97% 能力 | ⏳ 待读 |
-| 6 | **Textbooks Are All You Need**（Phi-1，Gunasekar et al.） | arXiv 2023 | [2306.11644](https://arxiv.org/abs/2306.11644)（已核对） | 1.3B 模型靠 GPT-3.5 生成的"教科书级"合成数据训练，HumanEval 50.6%、MBPP 55.5%；摘要已核对该分数 | ⏳ 待读 |
-| 7 | **Textbooks Are All You Need II**（phi-1.5） | arXiv 2023 | [2309.05463](https://arxiv.org/abs/2309.05463)（已核对） | Phi-1 续作，合成数据配方扩展到通用推理 | ⏳ 待读 |
+| 3 | **Born-Again Neural Networks**（Furlanello et al.） | ICML 2018 | [1805.04770](https://arxiv.org/abs/1805.04770)（已核对） | 同容量学生反复蒸馏自己：学生与老师同等大小仍稳定超过老师，并在集成中以极小成本超越最强基线——"蒸馏收益不止来自压缩"的首个顶会证据 | ⏳ 待读 |
+| 4 | **MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers**（Wang et al.） | NeurIPS 2020 | [2002.10957](https://arxiv.org/abs/2002.10957)（已核对） | 只蒸馏最后一层的 self-attention 分布（Q-K/V-V 关系），小模型参数减半以上、任务无关——蒸馏工程化的顶会范本 | ⏳ 待读 |
 
 ### 站 3：算力分配之争（"大模型欠训练，小模型喂饱更划算"）
 
 | # | 论文 | 发表 | arXiv | 一句话 | 状态 |
 |---|---|---|---|---|---|
-| 8 | **Training Compute-Optimal Large Language Models**（Chinchilla，Hoffmann et al.） | arXiv 2022 | [2203.15556](https://arxiv.org/abs/2203.15556)（已核对） | 参数量与训练 token 应 1:1 同扩；此前大模型普遍 token 喂不够 | ⏳ 待读 |
-| 9 | **LLaMA: Open and Efficient Foundation Language Models**（Touvron et al.） | arXiv 2023 | [2302.13971](https://arxiv.org/abs/2302.13971)（已核对） | Chinchilla 结论的直接实践：小模型配远超常规的 token 量打赢大模型 | ⏳ 待读 |
-| 10 | **Scaling Data-Constrained Language Models**（Muennighoff et al.） | NeurIPS 2023 | [2305.16264](https://arxiv.org/abs/2305.16264)（已核对） | 数据量有限时重复数据有边际递减，高质量数据比重复堆量更重要 | ⏳ 待读 |
+| 5 | **Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws**（Sardana et al.） | ICML 2024 | [2401.00448](https://arxiv.org/abs/2401.00448)（已核对） | 把推理成本计入总预算后，最优模型比 Chinchilla 预测更小、训练更久——"实践中为何偏向小模型"的 scaling 理论答案 | ⏳ 待读 |
+| 6 | **Scaling Data-Constrained Language Models**（Muennighoff et al.） | NeurIPS 2023 | [2305.16264](https://arxiv.org/abs/2305.16264)（已核对） | 数据量有限时重复数据有边际递减，高质量数据比重复堆量更重要 | ⏳ 待读 |
 
 ### 站 4：评测幻觉（"benchmark 是不是可以被定向过拟合"）
 
 | # | 论文 | 发表 | arXiv | 一句话 | 状态 |
 |---|---|---|---|---|---|
-| 11 | **GSM-Symbolic: Understanding the Limitations of Mathematical Reasoning in LLMs**（Mirzadeh et al.） | ICLR 2025 | [2410.05229](https://arxiv.org/abs/2410.05229)（已核对） | 仅改写题目表面措辞，各模型准确率即大幅下滑——高分里有相当部分是对评测分布的过拟合 | ⏳ 待读 |
-| 12 | **Benchmarking Benchmark Leakage in Large Language Models**（Xu et al.） | arXiv 2024 | [2404.18824](https://arxiv.org/abs/2404.18824)（已核对） | 系统检测训练语料对 benchmark 的泄漏："媲美"里有多少是原题记忆 | ⏳ 待读 |
+| 7 | **GSM-Symbolic: Understanding the Limitations of Mathematical Reasoning in LLMs**（Mirzadeh et al.） | ICLR 2025 | [2410.05229](https://arxiv.org/abs/2410.05229)（已核对） | 仅改写题目表面措辞，各模型准确率即大幅下滑——高分里有相当部分是对评测分布的过拟合 | ⏳ 待读 |
 
 ### 站 5：剪枝与参数冗余（"大模型里确实有莫名其妙的神经元"）
 
 | # | 论文 | 发表 | arXiv | 一句话 | 状态 |
 |---|---|---|---|---|---|
-| 13 | **The Lottery Ticket Hypothesis**（Frankle & Carbin，ICLR 2019 最佳论文） | ICLR 2019 | [1803.03635](https://arxiv.org/abs/1803.03635)（已核对） | 大网络中存在稀疏子网络，从头训练能达到原网络精度——参数冗余是真实的 | ⏳ 待读 |
-| 14 | **Comparing Rewinding and Fine-tuning in Neural Network Pruning**（Renda, Frankle & Carbin） | ICLR 2020 | [2003.02389](https://arxiv.org/abs/2003.02389)（已核对） | 系统比较剪枝后微调与等规模从头训练——"剪枝逆袭同尺寸模型"的猜想基本不成立 | ⏳ 待读 |
+| 8 | **The Lottery Ticket Hypothesis**（Frankle & Carbin，ICLR 2019 最佳论文） | ICLR 2019 | [1803.03635](https://arxiv.org/abs/1803.03635)（已核对） | 大网络中存在稀疏子网络，从头训练能达到原网络精度——参数冗余是真实的 | ⏳ 待读 |
+| 9 | **Comparing Rewinding and Fine-tuning in Neural Network Pruning**（Renda, Frankle & Carbin） | ICLR 2020 | [2003.02389](https://arxiv.org/abs/2003.02389)（已核对） | 系统比较剪枝后微调与等规模从头训练——"剪枝逆袭同尺寸模型"的猜想基本不成立 | ⏳ 待读 |
+
+## 📚 背景文献（非顶会，不进精读清单，供精读时查证）
+
+> 按登记规则移出阅读清单。这些文献仍是各站点论证的原始出处，精读对应站点时应配合查证；venue 均经 2026-08-14 DBLP 复核（见文末核查记录第四轮）。
+
+| 论文 | 载体 | 所属站点 | 与链路的关系 |
+|---|---|---|---|
+| **Scaling Laws for Neural Language Models**（Kaplan et al., OpenAI） | arXiv 2001.08361（技术报告，DBLP 仅 CoRR 记录） | 站 1 | "条件拉齐后大模型必赢"的定量基础：loss 随参数量/数据量/算力幂律下降 |
+| **Distilling the Knowledge in a Neural Network**（Hinton, Vinyals & Dean） | NIPS 2014 **Workshop**（arXiv 1503.02531） | 站 2 | 蒸馏开山：大模型软输出的信息密度远高于 one-hot 标签 |
+| **DistilBERT**（Sanh et al.） | NeurIPS 2019 **Workshop**（arXiv 1910.01108） | 站 2 | 蒸馏的工程落地范本：BERT 体积减 40%、速度提 60%，保留 97% 能力 |
+| **Textbooks Are All You Need**（Phi-1，Gunasekar et al.） | arXiv 2306.11644（技术报告） | 站 2 | 1.3B 模型靠 GPT-3.5 生成的"教科书级"合成数据训练（HumanEval 50.6%、MBPP 55.5%）——LLM 时代"蒸馏"升级为合成数据 |
+| **Textbooks Are All You Need II**（phi-1.5） | arXiv 2309.05463（技术报告） | 站 2 | Phi-1 续作，合成数据配方扩展到通用推理 |
+| **Training Compute-Optimal Large Language Models**（Chinchilla，Hoffmann et al.） | arXiv 2203.15556（预印本，DBLP 仅 CoRR 记录） | 站 3 | 参数量与训练 token 应 1:1 同扩；此前大模型普遍 token 喂不够 |
+| **LLaMA: Open and Efficient Foundation Language Models**（Touvron et al.） | arXiv 2302.13971（技术报告，DBLP 仅 CoRR 记录） | 站 3 | Chinchilla 结论的直接实践：小模型配远超常规的 token 量打赢大模型 |
+| **Benchmarking Benchmark Leakage in Large Language Models**（BenBench，Xu et al.） | arXiv 2404.18824（预印本，DBLP 仅 CoRR 记录） | 站 4 | 系统检测训练语料对 benchmark 的泄漏："媲美"里有多少是原题记忆 |
 
 ---
 
@@ -127,6 +139,22 @@
   3. 其余确认：GSM-Symbolic = ICLR 2025（dblp）、Scaling Data-Constrained = NeurIPS 2023（dblp，另有 JMLR 2025 版）、Belkin = PNAS（Semantic Scholar，正式发表年 2019）、Hinton 蒸馏 = NIPS 2014 Workshop（arXiv comment）、DistilBERT = NeurIPS 2019 Workshop（arXiv comment）、彩票假说 = ICLR 2019、Renda = ICLR 2020（均为 arXiv comment）、Double Descent = ICLR 2020（Semantic Scholar）。
   4. Phi-1 / phi-1.5 / Kaplan / LLaMA 四篇无正式会议发表记录，均为 arXiv 技术报告。
 - **留待精读时核对的细节**：Chinchilla 的具体数字（70B / 1.4T token 打赢 Gopher 280B / 300B token）、LLaMA 的 token 量（7B / 1T）等，本轮仅核对标题与 venue，未逐字核对正文数字。
+
+**第四轮：venue 全量复核与"只收顶会顶刊"登记（DBLP API，2026-08-14）**
+- 背景：使用方要求阅读清单只保留顶会/顶刊论文，未发表或二区三流 venue 一律移出清单。
+- 检索源：DBLP 出版物检索 API（`https://dblp.org/search/publ/api?q=<标题关键词>&format=json`），区分正式收录（Conference and Workshop Papers / Journal Articles）与预印本（CoRR，归为 Informal and Other Publications）；补位论文编号另经 arXiv API `id_list` 反查标题与作者确认。
+- 降级处置（14 篇中移出 8 篇）：
+  1. **Hinton 蒸馏**：NIPS 2014 Workshop，非主会 → 移入背景文献；
+  2. **DistilBERT**：NeurIPS 2019 Workshop（EMC²NLP），非主会 → 移入背景文献；
+  3. **Phi-1 / phi-1.5 / Kaplan / LLaMA**：均为技术报告，DBLP 仅 CoRR 记录 → 移入背景文献；
+  4. **Chinchilla / BenBench**：预印本（第三轮已更正）→ 移入背景文献。
+- 顶会保留（6 篇）：Nakkiran = ICLR 2020、Belkin = PNAS 2019（顶级综合期刊）、Muennighoff = NeurIPS 2023、GSM-Symbolic = ICLR 2025、Frankle & Carbin = ICLR 2019（最佳论文）、Renda = ICLR 2020。
+- 补位（3 篇，DBLP 确认正式收录 + arXiv API 核对编号/标题/作者）：
+  1. **Born-Again Neural Networks**（Furlanello et al.）= ICML 2018（arXiv 1805.04770），补站 2；
+  2. **MiniLM**（Wang et al.）= NeurIPS 2020（arXiv 2002.10957），补站 2；
+  3. **Beyond Chinchilla-Optimal**（Sardana et al.）= ICML 2024（arXiv 2401.00448），补站 3。
+- 结果：清单由 14 篇重组为 **9 篇顶会/顶刊** + 8 篇背景文献。
+- 核查范围限制：DBLP 接口本轮出现间歇性 503，部分检索词经多次重试方得结果；结论以成功响应为准。
 
 ---
 
