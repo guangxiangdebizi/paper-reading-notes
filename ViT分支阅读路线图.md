@@ -55,7 +55,7 @@
 | # | 论文 | 发表 | 一句话 | 状态 |
 |---|---|---|---|---|
 | 6 | **Registers**：Vision Transformers Need Registers | ICLR 2024 | 大规模预训练的 ViT 特征图里出现 artifact 高响应区，模型拿高范数垃圾 token 当"垃圾桶"，加几个可学习 register token 即可修复 | ⏳ 待读 |
-| 7 | **LAST-ViT**：Vision Transformers Need More Than Registers | CVPR 2026 | 上一问的续作：artifact 的根源是"懒惰聚合"——ViT 拿无关背景 patch 当全局语义的捷径；用频域 token 选择替代标准 CLS token，三种监督范式下 12 个 benchmark 全面提升 | ⏳ 待读 |
+| 7 | **LAST-ViT**：Vision Transformers Need More Than Registers | CVPR 2026 | 上一问的续作：artifact 的根源是"懒惰聚合"——ViT 拿无关背景 patch 当全局语义的捷径；用频域 token 选择替代标准 CLS token，三种监督范式下 12 个 benchmark 全面提升 | ✅ 已读（[笔记](./2026/08/last-vit/精读笔记/README.md)） |
 
 > 🕳️ 先记在"未来再说"坑里的：BEiT（遮块预测离散 token）、Segmentation Transformer 系（SETR 等）、Scaling Law 系（ViT-22B 等）、多模态系（CLIP 等）。其中 BEiT、ViT-22B、CLIP 系已于 2026-08-12 纳入《[ViT 家族拓展阅读路线图](./ViT家族拓展阅读路线图.md)》统一登记；核心八篇读完后按该图继续拓展。
 
@@ -71,6 +71,7 @@
 | [2026/08/swin-paper](./2026/08/swin-paper/精读笔记/README.md) | Swin | 窗口内局部注意力（线性复杂度）+ patch merging 层级化 + 移位窗口保流通，ViT 变成检测/分割通吃的通用骨干网；任务越密集优势越大（分割 +5.3 mIoU），组织方案输出给 all-MLP 也赢 |
 | [2026/08/detr-paper](./2026/08/detr-paper/精读笔记/README.md) | DETR | 检测 = 直接集合预测：N=100 个可学习 object queries 并行输出 + 匈牙利一对一匹配损失，去 anchor/NMS 首次端到端打平加强版 Faster R-CNN（42.0 AP，大目标 +7.8、小目标 -5.5）；全景分割 PQ 登顶；留下收敛慢（500 epoch）与小目标两大痛点待后续攻克 |
 | [2026/08/mae](./2026/08/mae/精读笔记/README.md) | MAE | 非对称 encoder-decoder（encoder 只看 25% 可见 patch、无 mask token；decoder 轻量训后即弃）+ 75% 高掩码比例，"遮块重建像素"同时兑现精度与效率（加速 3×+）；vanilla ViT-Huge 仅 IN1K 无标签达 87.8%，检测/分割/分类迁移全面超越监督预训练且随规模持续涨点 |
+| [2026/08/last-vit](./2026/08/last-vit/精读笔记/README.md) | LAST-ViT | artifact 的根源是"懒惰聚合"（粗粒度监督 + 全局注意力 → 背景 patch 走捷径编码全局语义）；LazyStrike 用通道维频域稳定度筛选 patch、逐通道 Top-K 构造 CLS token，预训练期介入零架构改动，三种监督范式下 PiB 大幅修复（ViT +12.4 / DINO +25.2 / CLIP +10.3）、12 个 benchmark 一致提升（CLIP L/14 VOC 分割 17.1→72.4），顺带消除 high-norm 现象 |
 
 ---
 

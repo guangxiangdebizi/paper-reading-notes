@@ -1,0 +1,598 @@
+                                               Vision Transformers Need More Than Registers
+
+                                                                         Cheng Shi1 Yizhou Yu1 Sibei Yang2
+                                        1School of Computing and Data Science, The University of Hong Kong 2Sun Yat-sen University
+
+                                                                 shicheng2025@connect.hku.hk, yizhouy@acm.org, yangsb3@mail.sysu.edu.cn
+
+                                                                                             https://github.com/ChengShiest/LAST-ViT
+
+arXiv:2602.22394v2 [cs.CV] 14 Apr 2026  input  ConvNet [1, 11]                                          Transformer [1, 7]  Transformer w/ LazyStrike (Ours)
+
+                                        Figure 1. LazyStrike provides a unified framework for analyzing and mitigating diverse artifacts across different supervision settings in ViTs.
+                                        The figure visualizes patch scores--defined as CLS-patch similarity--under full supervision (middle) and self-supervision (right), together
+                                        with PCA projections of features under full supervision (left).
+
+                                                                Abstract                                importantly, they serve as general-purpose feature extrac-
+                                                                                                        tors across various specific vision tasks [4, 9, 12, 33, 45],
+                                        Vision Transformers (ViTs), when pre-trained on large-scale     functioning as a frozen foundation model pre-trained on
+                                        data, provide general-purpose representations for diverse       large-scale data to embed images into feature representa-
+                                        downstream tasks. However, artifacts in ViTs are widely         tions, enabled by their scalability in data and model size.
+                                        observed across different supervision paradigms and down-       More broadly, this generic ViT feature extractor can adapt
+                                        stream tasks. Through systematic analysis of artifacts in       to various supervision methods during pre-training, with
+                                        ViTs, we find that their fundamental mechanisms have yet        different approaches exhibiting characteristics particularly
+                                        to be sufficiently elucidated. In this paper, through system-   suited to diverse downstream tasks. Specifically, supervised
+                                        atic analysis, we conclude that these artifacts originate from  methods--such as training ViTs with fully-supervised clas-
+                                        a lazy aggregation behavior: ViT uses semantically irrele-      sification labels or text-supervised image-text pairs (e.g., in
+                                        vant background patches as shortcuts to represent global        models like CLIP [27])--produce dense features for open-
+                                        semantics, driven by global attention and Coarse-grained        vocabulary tasks, and function as visual encoders for large
+                                        semantic supervision. Our solution selectively integrates       vision-language models (LVLMs) [20]. Alternatively, self-
+                                        patch features into the CLS token, reducing the influence of    supervised methods [1, 2, 25], particularly the DINO [1]
+                                        background-dominated shortcuts and consistently improving       model trained solely on images, demonstrate the potential
+                                        performance across 12 benchmarks under label-, text-, and       for object and part discovery, making them applicable to
+                                        self-supervision. We hope this work offers a new perspective    unsupervised segmentation tasks [31].
+                                        on ViT behavior.
+                                                                                                           However, recent studies uncover puzzling dense-feature
+                                        1. Introduction                                                 artifacts in ViTs when applied to downstream tasks requiring
+                                                                                                        dense features. For instance, DINO [43] demonstrates that
+                                        Vision Transformers (ViTs) [7] have become the de facto         label-supervised ViTs suffer from an attention deficit [26],
+                                        standard for image recognition [6, 13, 22-24, 40]. More         while CLIPSelf [37] observes that text-supervised ViTs fail
+                                                                                                        to produce dense image features that are accurately aligned
+                                              Corresponding author                                      with textual cues in open-vocabulary tasks. Meanwhile, Reg-
+ister [5] reveals that self-supervised ViTs generate artifacts   Method                High Norm  Point-in-Box (PiB)
+in the attention maps, commonly referred to as high-norm
+tokens, which adversely affect object localization tasks [31].   ResNet [11]                               68.4
+                                                                 ViT [7]                                   42.7
+   These phenomena suggest a common underlying issue in                                                    41.5
+ViTs, merely manifesting differently under various supervi-        +Register [5]
+sion paradigms [1, 14, 34]. In our preliminary exploration,                                                71.1
+we found that no single method [5, 36, 44] could comprehen-      DINO-ResNet [1]                           45.3
+sively address these phenomena. This result suggests that our    DINO-ViT [1]
+understanding of ViTs remains incomplete, even though they                                                 53.9
+have been studied for roughly half a decade [7]. Given that      OpenCLIP-ResNet [27]                      39.8
+many issues may stem from a shared mechanism, a unified          OpenCLIP-ViT [27]                         37.6
+solution is desirable. In this paper, we undertake a first-
+principles investigation - systematically defining, analyzing,     +Register [5]
+and addressing the different types of artifacts observed in
+ViTs from the ground up.                                         Table 1. Point-in-Box (PiB) across different supervision methods.
+                                                                 We find that Register reduces high-norm tokens but high-norm is
+   To establish a unified definition for these phenom-           not the root cause of artifacts.
+ena across different paradigms, we introduce the Patch
+Score--the similarity between patch features and the               ing (Fig. 3). We validate that reducing global dependencies
+CLS token, which encapsulates an image's global seman-             indeed mitigates artifact phenomena (Tab. 2).
+tics--thereby assessing local semantic consistency relative
+to the global representation, independent of the training           Building on this interpretation, we further validate our hy-
+paradigm. The intuition behind Patch Score is that for ViT       pothesis by proposing a straightforward solution to eliminate
+under different supervision, the training objective aims to      these artifacts: By regulating the influence of background
+align the CLS feature with supervisory signals (e.g., labels or  patches during pre-training, we encourage ViTs to focus
+text); any misalignment in dense features results in increased   on foreground semantics. Specifically, the model learns to
+Patch Scores in non-foreground regions, as shown in Fig. 1.      estimate the contribution of each token (Sec. 5.1) and se-
+To quantitatively assess artifacts in Patch Scores, we propose   lectively integrate informative patch features into the CLS
+the Point-in-Box (PiB) metric, which evaluates whether           token to strengthen foreground representation. As shown in
+the patch with the highest score lies within the annotated       Fig. 5, ViTs automatically shift their attention to foreground
+foreground region. As shown in Fig. 1 and Tab. 1, we find        objects, aligning high-scoring patches with the foreground
+that across different supervision settings, ViTs assign higher   as these ratios are appropriately increased. Once this lazy
+Patch Scores to background patches and achieve much lower        aggregation is mitigated, our approach - termed LaSt-ViT
+PiB compared with ConvNets [11]. Detailed experimental           (LazyStrike ViT)- eliminates Patch Score artifacts across
+settings are provided in Sec. 4.1. For clarity and simplicity,   all types of supervision. It effectively addresses both the
+unless explicitly stated otherwise, the term "artifacts" in the  high-norm token issue and feature misalignment. Notably,
+following text specifically refers to semantically irrelevant    after applying our method, ViTs exhibit improved emergent
+background tokens that erroneously yield high Patch Scores.      semantic segmentation properties [43] consistently across
+                                                                 different pre-training paradigms.
+   Based on Patch Score and PiB, we conduct an in-depth
+analysis into ViT's behavior and propose a hypothesis aimed         Contributions. (1) We systematically analyze the root
+at better explaining these artifacts:                            cause of artifacts in ViTs via Patch Score and Point-in-Box
+                                                                 (PiB), revealing a background-dominant bias that emerges
+· Natural images inherently contain many background              early and persists. (2) We provide a hypothesis linking
+  patches that are irrelevant to the primary object. With only   Coarse-grained semantic supervision and global dependen-
+  image-level supervision, the model lacks spatial guidance      cies to lazy aggregation--a shortcut behavior where ViTs
+  and thus tends to encode global semantics via background       rely on background patches to encode global semantics in-
+  evidence (lazy aggregation). Empirically, removing the         stead of attending to true foreground regions. (3) We propose
+  top 50% highest-scoring patches in a pre-trained ViT has       LaSt-ViT, a simple, frequency-aware selective aggregation
+  negligible impact on ImageNet accuracy (Fig. 2), corrobo-      scheme that anchors the CLS token to foreground regions.
+  rating this reliance.                                          (4) We demonstrate consistent gains across 12 benchmarks
+                                                                 including object discovery, semantic/instance segmentation,
+· Global dependencies allow ViT to exploit these extrane-        and open-vocabulary detection.
+  ous background patches as shortcuts to represent global
+  semantics. In the absence of patch-level annotations, ViTs     2. Related Work
+  may adopt a lazy aggregation by diffusing small fore-
+  ground semantics to background at the beginning of train-      Artifacts in text-supervised ViTs (CLIP-type mod-
+                                                                 els [27]). Recent advances in vision-language contrastive
+                                                                 pretraining [18, 27] have enabled CLIP models to pro-
+                                                                 duce dense predictions beyond image-level classification.
+MaskCLIP [44] first showed that CLIP features can yield                                                                                                                                    emerge in ViTs (Sec. 4.1). From both spatial and tempo-
+zero-shot semantic segmentation via pixel-text alignment.                                                                                                                                  ral perspectives (Sec. 4.2), we find that high patch scores
+However, later studies [10, 17, 19, 36, 37, 42] found that                                                                                                                                 concentrate in background regions, and this bias appears
+although ViTs surpass ResNets in model capacity and clas-                                                                                                                                  from the very beginning of training and persists through-
+sification accuracy, they perform worse on dense alignment                                                                                                                                 out. These findings suggest that ViTs, trained with Coarse-
+tasks. To mitigate this misalignment, existing works either                                                                                                                                grained semantic supervision (image-level rather than patch-
+(1) modify the final attention layers [10, 17, 19, 36, 38, 42]                                                                                                                             level objectives) and equipped with strong global dependen-
+or (2) introduce additional alignment training [3, 37] or (3)                                                                                                                              cies (long-range attention), tend to adopt a lazy aggregation
+employ test-time activation editing, such as dynamically                                                                                                                                   shortcut--diffusing foreground semantics into background
+shifting high-norm outlier activations into untrained regis-                                                                                                                               tokens. To verify this hypothesis, we isolate each factor:
+ter tokens during inference [15]. In contrast, our method                                                                                                                                  reducing background tokens by using a larger patch size
+tackles the problem directly during pretraining, avoiding                                                                                                                                  in the embedding layer (Sec. 4.3) and constraining the at-
+architectural changes, post-hoc fine-tuning, and test-time                                                                                                                                 tention range via window-based attention (Sec. 4.4). Both
+interventions, fundamentally preventing the emergence of                                                                                                                                   interventions raise the Point-in-Box score but slightly lower
+lazy behavior in text-supervised ViTs.                                                                                                                                                     classification accuracy, indicating that reducing global de-
+Artifacts in self-supervised ViT (DINO-type model [1]).                                                                                                                                    pendencies helps suppress background bias at the cost of
+Register [5] found that DINOv2 [25] leads to successful                                                                                                                                    overall recognition performance. All analyses are conducted
+monocular depth estimation and semantic segmentation, but                                                                                                                                  on ImageNet-1k [6, 34], with consistent trends observed
+it loses the object detection capability of DINO [1] due to                                                                                                                                under text- and self-supervised pretraining [1, 14, 28]. Fur-
+artifacts appearing on the feature map. To address this issue,                                                                                                                             ther observations--such as the role of high-norm tokens [5]
+additional tokens were introduced, designed to store global                                                                                                                                and the unique behavior of DINO-v1--are provided in the
+features and mitigate the impact of these artifacts. During our                                                                                                                            Appendix.
+in-depth analysis of the high-norm phenomenon, we found
+that high-norm is merely a manifestation of the lazy behavior                                                                                                                              4.1. New Metric: Patch Score and Point-in-Box
+in later stages. Simply moving the high-norm tokens from
+the feature map to the register tokens does not fully address                                                                                                                              Patch Score. To enable a unified comparison across archi-
+the underlying deficiencies in downstream tasks. Therefore,                                                                                                                                tectures and pretraining settings, we define the Patch Score
+Vision Transformer requires more than just Registers.                                                                                                                                      as the similarity between each patch and the global repre-
+                                                                                                                                                                                           sentation. For ViTs, the global representation is the CLS
+3. Preliminary                                                                                                                                                                             token QCLS; for ConvNets, it is the feature after global av-
+                                                                                                                                                                                           erage pooling QGAP, which serves as an implicit CLS token.
+3.1. Network Architecture: Vision Transformer                                                                                                                                              Formally,
+
+Given an image x  RH×W ×3, ViTs [7] split it into non-                                                                                                                                       \mathcal {S}_{\text {p}} = \frac {\mathbf {x}_{\text {patch}} \cdot Q_{\text {CLS}}} {\|\mathbf {x}_{\text {patch}}\|_2 \, \|Q_{\text {CLS}}\|_2}, \tag {3}  (3)
+
+overlapping P × P patches and linearly project them to
+
+xemb    RN ×D  with N   =  HW   via the patch embedding                                                                                                                                    where higher Patch Scores indicate stronger alignment with
+                            P2                                                                                                                                                             image-level semantics.
+                                                                                                                                                                                           Point-in-Box benchmark. Building on the patch score, we
+Pemb(·). An encoder Penc(·) consisting of a stack of trans-                                                                                                                                assess artifacts by determining whether the highest scoring
+                                                                                                                                                                                           regions correspond to foreground objects. We use images
+former blocks updates tokens with self-attention. Global                                                                                                                                   from the ImageNet [6] validation set that feature a single
+                                                                                                                                                                                           object annotation to avoid ambiguity. We define the Point-
+aggregation is applied to the output of the encoder using one                                                                                                                              in-Box score as the proportion of images where the highest
+                                                                                                                                                                                           patch score falls within the foreground bounding box.
+of two standard forms:
+                                                                                                                                                                                           4.2. Artifacts in Patch Score
+        \mathbf {x}_{\text {patch}} = \mathcal {P}_{\text {enc}}( \mathcal {P}_{\text {emb}}(\mathbf {x})), & \mathcal {Q}_{\text {CLS}} = \texti
+                      t {Pooling}(\mathbf {x}_{\text {patch}}),\label {equ1} \tag {1} \\ \textit {o}&\textit {r} \notag {}\\ \mathbf {x}_{\text {patch}}, \mathca                            Q: Where does the CLS token "look" at?
+                                       l {Q}_{\text {CLS}} = \mathcal {P}_{\text {enc}}&( \mathcal {P}_{\text {emb}}(\mathbf {x}), \mathcal {O}_{\text {CLS}}),\label {equ2} \tag {2} (2)
+                                                                                                                                                                                           Experiment Setting. We study a ViT-B/16 trained on
+where Pooling is global average pooling (GAP) over patch                                                                                                                                   ImageNet-1k [6] (fully supervised). We visualize the nor-
+tokens in Eq. (1); OCLS is a learnable query concatenated                                                                                                                                  malized patch-score distributions, and perform a probe by
+before encoding in Eq. (2), whose output token QCLS serves                                                                                                                                 masking the top-k or bottom-k patches directly on the input
+as the global representation.                                                                                                                                                              image prior to re-evaluation.
+                                                                                                                                                                                           Experiment Results. The experimental results show that:
+4. Analysis and Hypothesis
+
+We introduce two probes--Patch Score (CLS-patch similar-
+ity) and Point-in-Box--to analyze where and when artifacts
+              (a) Score Distribution  80 8(b1.)1%Mask8in1.g1%Performance
+
+         2.0  On Object               60 70.3%
+
+Density  1.5  On Background
+
+         1.0                          40         22.3%
+                                             High Patch Score First
+         0.5                          20     Random Order
+                                             Low Patch Score First
+         0.0 0 0.2 0.4 0.6 0.8 1.0 0 0    28 56 84 112 140 168 196
+
+             Normalized Patch Score       # of Masked Patches
+
+Figure 2. Patch-score distribution and masking probe on                   Figure 3. Training dynamics on ImageNet-1k. Left: top-1 ac-
+ImageNet-1k. (a) Normalized distributions of patch scores for fore-       curacy; Right: Point-in-Box score. As training proceeds, ViT's
+ground vs. background. (b) Removing top-k high-score patches              classification accuracy steadily improves, yet its Point-in-Box score
+(up to 70%) does not hurt accuracy and even can improve it.               remains nearly flat (around 0.42  0.44) and consistently lower
+                                                                          than ResNet's across the entire training process.
+· Distribution. Foreground patches concentrate at lower
+   patch-score values, while background patches dominate                    Even at early iterations, the CLS token already attends
+   the high-score tail (Fig. 2a).                                           predominantly to background patches instead of fore-
+                                                                            ground regions, and this bias persists throughout train-
+· Masking Probe. Removing high-score patches does                           ing--yielding accurate image-level predictions but poor
+   not harm accuracy--and can even slightly improve it                      patch-level alignment.
+  (e.g., +1.2% for ViT-B/16)--even when more than 50%
+   of patches are masked. In contrast, removing low-score                    This early emergence indicates that the artifacts are not
+   patches leads to a sharp accuracy drop (up to 60% at 70%               late-stage byproducts but intrinsic phenomena during ViT
+   masking; Fig. 2b).                                                     training. We hypothesize that at the start of training, the CLS
+                                                                          token seeks the easiest path to minimize the image-level
+  A: Masking out background patches in the input image                    loss, quickly learning to aggregate background tokens that
+  barely affects classification performance, yet these re-                correlate with the image-level label. As a result, image-level
+  gions show feature responses strongly correlated with                   semantics are "short-circuited" through background regions,
+  the CLS token that encodes class semantics, suggest-                    leading to high classification accuracy but poor patch-level
+  ing that foreground information has been propagated                     alignment--a hallmark of the model's lazy aggregation be-
+  into the background during training-- a behavior likely                 havior. We next hypothesize that this behavior originates
+  driven by the dominance of background tokens over                       from two interacting factors: (1) Coarse-grained semantic
+  foreground ones in natural images (as shown in Fig. 2b,                 supervision, where image-level labels cannot provide accu-
+  where over half of the patches are non-contributive to                  rate patch-level supervision; and (2) Global dependencies,
+  classification).                                                        where attention-based token mixing allows background to-
+                                                                          kens to absorb foreground information. Sections 4.3 and 4.4
+  Q: When does this phenomenon begin?                                     further isolate and quantify the contribution of each factor.
+
+Experiment Setting. We train ViT-B/16 [7] and ResNet-                     4.3. Coarse-grained Semantic Supervision
+50 [11] on ImageNet-1k [6] with identical hyperparameters
+and batch size, and track both top-1 accuracy and the Point-              Validation Experiment Setting. To evaluate the effect of
+in-Box score throughout training.                                         coarse-grained semantic supervision, we reduce the preva-
+Experiment Results. The experimental results show that:                   lence of background tokens by increasing the patch size used
+· Point-in-Box dynamics. The Point-in-Box score of ViT,                   in the embedding module Pemb(·). As the patch size grows,
+                                                                          fewer tokens are generated, and many small background
+   reflecting artifact level (lower indicates stronger back-              regions are merged into larger patches, thereby reducing
+   ground bias), stays low and nearly unchanged during train-             the relative proportion of background tokens. Specifically,
+   ing, even as classification accuracy improves (Fig. 3).                we train ViT-Base on ImageNet-1k [6] with a 28×28 patch
+· Comparison with ResNet. Compared with ResNet, ViT                       size (default: 16×16), which decreases the proportion of
+   consistently shows a lower Point-in-Box score, revealing a             background tokens by about 10% (see Appendix for details).
+   more pronounced background bias despite similar image-                 Validation Experiment Results. As shown in Fig. 4, Point-
+   level accuracy (Fig. 3).                                               in-Box increases from 0.44 to 0.52 after enlarging the patch
+                                                                          size, which reduces the proportion of background tokens by
+  A: Propagation of foreground information into the back-
+  ground occurs from the very beginning of training.
+about 10%. Patch-score maps show that high-score regions             mantics into abundant background tokens. This shortcut
+shift from background to object areas. However, top-1 accu-          yields high image-level accuracy but results in represen-
+racy drops from 62% to 55%, revealing a trade-off between            tations dominated by background information, showing
+classification and localization accuracies.                          that optimizing for global classification objectives can
+                                                                     compromise patch-level semantic consistency in ViTs.
+
+                                                                     5. Method
+
+Figure 4. Effect of Coarse-grained semantic supervision. In-         Overview and Rationale. To mitigate lazy aggregation, we
+creasing the patch size reduces background tokens by 10%. Effect:    reformulate CLS token aggregation as a frequency-aware
+Point-in-Box rises from 0.44 to 0.52, and high-score patches shift   process that distinguishes foreground patches from back-
+toward foreground. Trade-off: classification accuracy decreases,     ground ones. In natural images, foreground signals have
+indicating that coarse-grained semantic supervision contributes to   more homogeneous semantic meaning, giving rise to less
+artifacts, while naive patch coarsening compromises recognition.     variations along the channel dimension of a feature map
+                                                                     in a deep layer, whereas background often has higher se-
+                                                                     mantic diversity; thus selecting tokens that are stable under
+                                                                     low-pass filtering in the channel dimension can potentially
+                                                                     anchor CLS tokens to foreground regions.
+
+4.4. Lazy Behavior from ViT's Global Dependencies                    5.1. LaSt-ViT
+
+Validation Experiment Setting. We further examine                    Stability Score. Let xpatch  RN×D denote the collection
+whether ViT's global attention exacerbates the lazy aggrega-         of all patch representations generated from the ViT encoder
+tion behavior by allowing foreground semantics to be prop-           (after dropping [CLS]) and let g  [0, 1]D be a normalized
+agated into background regions. To progressively restrict            vector of Gaussian weights duplicated to all patches:
+long-range dependencies, we replace global self-attention
+with window-based attention [21] at different layers.                             \begin {aligned} \mathbf {x}_{\mathrm {FFT}} &= \mathrm {FFT1D}(\mathbf {x}_{\mathrm {patch}}),\\ \mathbf {x}_{\mathrm {LP}} &= \mathbf {x}_{\mathrm {FFT}} \odot \mathbf {g},\\ \hat {\mathbf {x}}_{\mathrm {pa                                                                                                              (4)
+
+                                                                                                                                                                                                                                                                                                    tch}}&= \Re \{\mathrm {IFFT1D}(\mathbf {x}_{\mathrm {LP}})\}, \end {aligned} \tag {4} \label {eq:lowpass} 
+
+Replaced Layer   Window Size  Top-1 (IN1K)  Point-in-Box             where FFT1D and IFFT1D respectively represent the 1D
+                                                                     Fourier transform and the 1D inverse Fourier transform in
+      None            None          72.3         50.1                the channel dimension of every patch,  is element-wise
+    1, 5, 9, 11         4           71.7         52.1                multiplication, and {·} extracts the real part. The channel-
+                        4           63.9         59.8                wise stability score compares individual channels of original
+        All                                                          and low-pass-filtered patch representations:
+
+Table 2. Window-attention ablation on ViT-Small. Restricting           \mathbf {S}_{i,j}=\frac {\hat {\mathbf {x}}_{\mathrm {patch}}[i,j]}{\bigl |\hat {\mathbf {x}}_{\mathrm {patch}}[i,j]-\mathbf {x}_{\mathrm {patch}}[i,j]\bigr |+\varepsilon }, \tag {5}                                                                                                                                                   (5)
+global dependencies raises Point-in-Box but reduces top-1 accuracy.
+This suggests that unrestricted global attention amplifies lazy be-  where i is the patch index and j is the channel index.
+havior, as coarse-grained semantic supervision allows background     Channel-wise Top-K Pooling. Using channel-wise stability
+tokens to absorb diffused semantics from the foreground.             scores, we aggregate patch representations into the CLS
+                                                                     token by selecting, for each channel, the K most stable
+Validation Experiment Results. As shown in Tab. 2, the               patches (tokens) and averaging them:
+Point-in-Box score increases as global attention is limited,
+with the highest value achieved when all layers adopt win-              \mathcal {I}_{K}(j)\;=\;\operatorname {TopK}\!\big (\{\mathbf {S}_{i,j}\}_{i=1}^{N},\,K\big ),\qquad j=1,\ldots ,D, \tag {6}  (6)
+dow attention. However, accuracy declines correspondingly,
+implying that while global context benefits classification, it
+also facilitates semantic diffusion into background patches.
+
+Takeaway: When vision transformers are trained under                    \begin {aligned} \mathcal {Q}_{\text {CLS}}[j] &= \operatorname {\!Pool}_{K}\!\big (\mathbf {x}_{\mathrm {patch}}[:,j];\,\mathbf {S}_{:
+coarse-grained semantic supervision and equipped with                                                ,j}\big )\\ &\triangleq \frac {1}{K}\sum _{i\in \mathcal {I}_{K}(j)} \mathbf {x}_{\mathrm {patch}}[i,j],\qquad j=1,\ldots ,D, \end {aligne (7)
+unrestricted global dependencies, they tend to pursue                                                                                d} \tag {7} 
+the easiest optimization path--diffusing foreground se-
+                                                                     where IK(j) represents the index set of the K patches with
+                                                                     the highest stability scores in the j-th channel.
+                                                                                                                                                                  Method                 High Norm  Points-in-Box
+
+                                                                                                                                                                  ResNet [11]                            68.4
+                                                                                                                                                                  ViT [7]                                42.7
+                                                                                                                                                                  ViT (+LazyStrike)                  55.1 (+12.4)
+
+                                                                                                                                                                  DINO-ResNet [1]                        71.1
+                                                                                                                                                                  DINO-v1 [1]                            44.5
+                                                                                                                                                                  DINO-v1 (+LazyStrike)              69.7 (+25.2)
+
+                                                                                                                                                                  CLIP-ResNet [27]                       53.9
+                                                                                                                                                                  CLIP [27]                              39.8
+                                                                                                                                                                  CLIP (+LazyStrike)                 50.1 (+10.3)
+
+Figure 5. Where does the CLS token in LaSt-ViT "look at"?                                                                                                         Table 3. Evaluation of the LazyStrike in Points-in-Box score.
+For each image, patches whose vote count exceeds 50%, 30%, or
+20% of the largest vote count within the image are visualized in red
+from left to right, respectively. After the application of LaSt-ViT,
+highly voted patches consistently correspond to foreground regions,
+showing that the CLS token primarily aggregates foreground tokens
+rather than background ones.
+
+Vote Count. We define the vote count of token (patch) i as
+
+          \label {eq:vote} v_i \;\triangleq \; \sum _{j=1}^{D} \mathbf {1}\!\bigl \{\, i \in \mathcal {I}_{K}(j) \,\bigr \}, \qquad i=1,\ldots ,N, \tag {8}  (8)  Figure 6. Evaluation of the LaSt-ViT in feature norm. Specifically,
+                                                                                                                                                                  the elimination of artifacts also removes the high-norm phenom-
+where 1{·} denotes the indicator function. A larger vi indi-                                                                                                      ena [5], highlighting our deeper perspective on addressing artifacts.
+cates a greater importance of patch i among all patches.
+                                                                                                                                                                  between patch features and arbitrary text features, thereby
+Where does the CLS token in LaSt-ViT look at? After                                                                                                               enabling applications across various open-vocabulary tasks.
+the application of LaSt-ViT, the highly voted patches are
+better aligned with the foreground regions and the number of                                                                                                      6. Experiment
+such patches increases or decreases with the amount of fore-
+ground evidence (see Fig. 5), indicating that the model has                                                                                                       6.1. Experiment Settings
+learned to anchor the CLS token to the foreground patches.
+                                                                                                                                                                  We first verify the elimination of artifacts in patch score
+5.2. Transfer to Downstream Tasks                                                                                                                                 (Sec. 6.2) and validate our proposed method on three train-
+                                                                                                                                                                  ing methods: fully supervised (Sec. 6.3), text-supervised
+In this section, we provide further details and explain how                                                                                                       (Sec. 6.4), and self-supervised (Sec. 6.5), and examine multi-
+each downstream task is conducted.                                                                                                                                ple downstream tasks for ViT under different supervision, in-
+Unsupervised Object Discovery. Since LazyStrike guides the                                                                                                        cluding object discovery [1, 31], zero-shot semantic segmen-
+CLS token to focus on foreground objects, we can achieve                                                                                                          tation [27, 32, 39], open-vocabulary object detection [16, 30],
+unsupervised object localization using patch scores. This                                                                                                         instance segmentation [29, 37? ] and coarse segmenta-
+expansion is independent of the training method--typically a                                                                                                      tion [1].
+privilege of self-supervised approaches like DINO in earlier
+works--allowing any training objective to accomplish this.                                                                                                        6.2. Artifact Elimination
+We construct the mask by applying a threshold defined as
+the mean score plus one standard deviation. Patches with                                                                                                          Elimination of artifacts in feature norm and patch score.
+scores above this threshold are classified as foreground.                                                                                                         Tab. 3 presents the results under different training meth-
+Zero-shot Open-Vocabulary Tasks. Since LazyStrike ensures                                                                                                         ods, demonstrating that LazyStrike not only eliminates the
+that the CLS feature aggregates information from the correct                                                                                                      high-norm phenomenon but also enhances Point-in-Box
+patch features, and the CLS feature itself is directly super-                                                                                                     score. With LazyStrike applied, ViT's Point-in-Box score ap-
+vised by the learning signal, this effectively leads to an im-                                                                                                    proaches that of ResNet [11]. Fig. 6 provides a detailed anal-
+plicit alignment between patch features and the supervision                                                                                                       ysis of feature norms under fully supervised training [34],
+signal. For text-supervised ViTs, we can obtain zero-shot                                                                                                         revealing that LazyStrike reduces the maximum feature val-
+semantic segmentation results by computing the similarity                                                                                                         ues, thereby mitigating the high-norm phenomenon.
+Model                   Backbone     COCO-Obj.     ADE20K                  City.          VOC20           Context59     COCO-Stf.
+
+CLIP [27]               ViT-B/16           8.8         3.1                  6.5             49.0              11.2           7.2
+CLIP (+LazyStrike)      ViT-B/16      13.3 (+4.5)  8.3 (+5.2)          12.1 (+5.6)      75.0 (+26.0)      15.2 (+4.0)   11.8 (+4.6)
+MetaCLIP [39]           ViT-B/16
+MetaCLIP (+LazyStrike)  ViT-B/16           4.8         2.9                  5.8             39.6               9.3           6.2
+EVACLIP [32]            ViT-B/16      14.1 (+9.3)  7.9 (+5.0)          11.1 (+5.3)      72.8 (+33.2)      15.5 (+6.2)   12.0 (+5.8)
+EVACLIP (+LazyStrike)   ViT-B/16
+                                          15.0         6.7                 12.2             56.5              14.1           9.7
+CLIP [27]               ViT-L/14     26.2 (+11.2)  14.8 (+8.1)         24.5 (+12.3)     79.6 (+23.1)      24.7 (+10.6)  18.3 (+8.6)
+CLIP (+LazyStrike)      ViT-L/14
+MetaCLIP [39]           ViT-L/14           3.0         1.6                  2.7             17.1               5.1           3.2
+MetaCLIP (+LazyStrike)  ViT-L/14     15.0 (+12.0)  8.4 (+6.8)          12.3 (+9.6)      72.4 (+55.3)      15.1 (+10.0)  11.9 (+8.7)
+EVACLIP [32]            ViT-L/14
+EVACLIP (+LazyStrike)   ViT-L/14           5.0         3.3                  6.2             25.7               8.9           6.1
+                                      13.9 (+8.9)  9.2 (+5.9)          13.9 (+7.7)      75.6 (+49.9)      16.0 (+7.1)   12.5 (+6.4)
+
+                                          15.7         8.4                 13.8             53.8              16.6          10.1
+                                      24.0 (+8.3)  11.3 (+2.9)         17.7 (+3.9)      76.4 (+22.6)      21.7 (+5.1)   14.8 (+4.7)
+
+Table 4. Evaluation results (mIoU, %) on six semantic segmentation benchmarks. Our results are marked in gray . LazyStrike consistently
+improves semantic segmentation results under text supervision across different type of CLIP [27] and model sizes, demonstrating that, after
+understanding the essence of the problem, a simple approach can uniformly address issues across different models.
+
+Method               Backbone           COCO Detection                                       LVIS Segmentation
+
+                               AP50box       AP50base box        AP50novel box  APmask       APfreq mask  APcomm mask   APnovel mask
+
+ConvNet based          RN50    39.6          /                   28.0           24.2         26.9         24.0          18.6
+F-VLM [16]           RN50x64
+F-VLM [16]                        /          /                   /              34.9         /            /             32.8
+ViT based            ViT-B/16
+F-ViT [37]           ViT-B/16      34.9          41.0                17.5           15.4         20.6         12.3          11.5
+F-ViT (+LazyStrike)  ViT-L/14  45.7 (+10.8)  50.1 (+11.1)        33.3 (+15.8)   21.7 (+6.3)  25.2 (+4.6)  18.0 (+5.7)   22.8 (+11.3)
+F-ViT [37]           ViT-L/14
+F-ViT (+LazyStrike)                46.0          53.6                24.7           28.7         31.5         27.9          24.2
+                               53.2 (+7.2)   68.2 (+14.6)        39.1 (+14.4)   34.3 (+5.4)  35.1 (+3.6)  34.4 (+6.6)   32.1 (+6.6)
+
+Table 5. Evaluation results on open-vocabulary benchmark. Our results are marked in gray . LazyStrike consistently enhances
+performance on open-vocabulary dense tasks, by demonstrating that frozen ViT can achieve comparable performance with ConvNet [11].
+
+Model                   Train              mIoU                  properties and those are not exclusive to self-supervised.
+                                                                 Emergence of PCA. As shown in Fig. 7, we compute the
+ViT-B/16                Supervised          22.3                 PCA of the patch features from LaSt-ViT and visualize the
+ViT-B/16 (+LazyStrike)  Supervised      32.8 (+10.5)             first three components for the foreground. LazyStrike refines
+ViT-S/16                Supervised                               the previously entangled PCA features, effectively distin-
+ViT-S/16 (+LazyStrike)  Supervised          29.5                 guishing and highlighting the salient foreground.
+                                        41.9 (+12.4)
+ViT-S/16                DINO                                     6.4. Weakly-Supervised Comparison
+ViT-S/16 (+LazyStrike)  DINO                47.7
+                                        55.1 (+7.4)              Zero-shot Semantic Segmentation benchmarks. Tab. 4
+                                                                 illustrates our proposed method against several baseline mod-
+Table 6. Coarse segmentation via patch score. We follow [41]     els on six semantic segmentation benchmarks. The improve-
+to conduct coarse segmentation on VOC12. With LazyStrike, ViT    ments achieved by integrating our modifications into these
+under label-supervision also appears emergence of segmentation.  models are highlighted in blue. Our method consistently
+                                                                 outperforms the baseline models across all evaluated bench-
+6.3. Fully-Supervised Comparison                                 marks, demonstrating significant gains. For instance, when
+                                                                 applied to the CLIP [27] model with ViT-B/16 architecture,
+Emergence of Coarse Segmentation. Following [1], we              our method achieves a substantial increase in mIoU on the
+evaluate emerging properties, a phenomenon only appears          Pascal (from 11.2% to 15.2%), Cityscapes (from 6.5% to
+in self-supervised training before, on the validation set of     12.1%), and VOC (from 49.0% to 75.0%). When scaled up
+VOC12. As shown in Tab. 6, our method consistently im-           to the larger ViT-L architecture, our method continues to
+proves emerging properties across different model sizes and      deliver remarkable results. For the CLIP model, the mIoU
+training methods. Notably, our approach achieves perfor-         on VOC jumps from 17.1% to an impressive 72.4%, and on
+mance close to DINO in the supervised setting (41.9% vs.
+47.7%), demonstrating that LazyStrike prompts emerging
+Method          FPS VOC07 VOC12 COCO                               Method             IN1K [6]  VOC [8]    COCO [8]
+                                                                                        55.8      10.7         3.3
+SS [35]         -            18.8  20.9  16.0                      Attention-Pool       53.1      71.9        12.2
+EdgeBoxes [46]                                                     Max-Pool
+                -            31.1  31.6  28.8                                           53.5      72.7        13.5
+                                                                   w/ LazyStrike        55.8      75.8        18.5
+DINO-seg [1]    29.4 45.8          46.2  42.1                         K=1               56.2      75.9        18.0
+                                                                      K = 49            55.3      13.5         4.8
+LOST [31]       29.4 61.9          64.0  50.7                         K = 98
+                                                                      K = 196 (Full)
+DINO (+LazyStrike) 55.9 64.4       67.6  51.6
+
+Table 7. Object discovery CorLoc. All models adopt ViT-S. Pre-     Table 8. Ablation study on text-supervised ViT [14]. We report
+vious best-performing methods relied on eigenvector computations,  ImageNet classification and downstream semantic segmentation
+whereas LazyStrike avoids such heavy computational demands.        results, where LazyStrike significantly addresses the artifact issue
+                                                                   and even leads to an improvement in classification performance.
+
+        ViT [7] +LazyStrike        ViT [7] +LazyStrike             Method             IN1K [6]  VOC07 [8]  VOC12 [8]
+                                                                                        59.1        14.1       28.7
+Figure 7. Visualization of PCA components. We compute the          Attention-Pool       64.3        15.3       29.6
+PCA of the patch features and visualize the first 3 components     Mean-Pool
+for the foreground object. With LazyStrike, ViT under label-                            64.6        30.4       35.6
+supervision also distinguish foreground from background and sepa-  w/ LazyStrike        64.8        32.1       37.6
+rate object parts, enhancing feature representation.                  K=1               64.9        15.8       30.3
+                                                                      K=7
+                                                                      K = 49 (Full)
+
+Cityscapes, it increases from 2.7% to 12.3%. In summary,           Table 9. Ablation study on label-supervised ViT [34]. We report
+integrating our method into the baseline models results in sig-    ImageNet classification performance and downstream object loca-
+nificant improvements across all benchmarks, demonstrating         tion results, where LazyStrike significantly addresses artifacts.
+its robustness and effectiveness across various CLIP models
+and models of different sizes.                                     ments of 2.7%, 3.6%, and 0.9% points, respectively, over
+Open-vocabulary Object Detection and Segmentation                  the best-performing LOST model. Moreover, our method
+benchmarks. As shown in Tab. 5, We choose F-VLM [16]               demonstrates a remarkable throughput of 55.9 images per
+and F-ViT [37] as baselines. Both methods use a frozen             second. This indicates that our model achieves superior ob-
+CLIP [32] as the backbone for object detection and instance        ject discovery performance and operates more efficiently,
+segmentation. After obtaining the region of interest, they         making it highly suitable for practical applications.
+weigh the semantic scores of the corresponding area to de-
+termine the object class scores. The only difference is that F-    6.6. Ablation study
+VLM uses a ConvNet-based backbone, while F-ViT employs
+a ViT-based backbone. For OV-COCO, LaSt-ViT achieves               Other method to alleviate artifacts. In Tab. 8, we also
+a gain of 15.8% and 14.4% over the baseline on the novel           report results with Maxpool, which naturally reduces back-
+category for ViT-B and ViT-L, respectively. For OV-LVIS, it        ground activations and serves as a strong reference for as-
+also improves the baseline by 11.3% and 6.6% over the rare         sessing artifact mitigation. While Maxpool brings moderate
+category for ViT-B and ViT-L.                                      improvement, our approach achieves substantially higher
+                                                                   performance across both classification and segmentation
+6.5. Self-Supervised Comparison                                    tasks, demonstrating that the improvement stems from more
+                                                                   effective semantic aggregation rather than a pooling-induced
+Unsupervised Object Discovery. We adopt DINO-seg [1]               side effect.
+and LOST [31] as baselines for comparison, both utilizing
+ViT-S [7] as the backbone for object discovery tasks. The          Number of cutted tokens. In Tab. 8, we examine the impact
+comparisons are illustrated in Tab. 7. LaSt-ViT exhibits           of Top-K by training OpenCLIP [14] ViT-B/16 with differ-
+significant performance improvements. Specifically, our            ent number of K. Performance improves significantly with
+model achieves the highest CorLoc scores across all datasets,      LazyStrike, peaking when half of the tokens are selected.
+surpassing both DINO-seg and LOST models. Notably, our             Tab. 9 shows further ablation studies on label-supervised
+model attains a CorLoc score of 64.4% on VOC 2007, 67.6%           ViT-B/32, with pretraining on ImageNet-1k and classifica-
+on VOC 2012, and 51.6% on COCO, representing improve-              tion performance and CorLoc results.
+7. Conclusion                                                         [10] Sina Hajimiri, Ismail Ben Ayed, and Jose Dolz. Pay attention
+                                                                            to your neighbours: Training-free open-vocabulary semantic
+We reveal that Vision Transformers often adopt a lazy aggre-                segmentation. arXiv preprint arXiv:2404.08181, 2024. 3
+gation behavior--relying on numerous background patches
+to encode global semantics due to their overwhelming domi-            [11] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+nance over foreground regions. To counter this, we propose                  Deep residual learning for image recognition. In CVPR, 2016.
+LaSt-ViT, a frequency-guided selective aggregation that fo-                 1, 2, 4, 6, 7
+cuses the CLS token on stable, foreground-relevant features.
+Our method effectively eliminates artifacts across various            [12] Kaiming He, Georgia Gkioxari, Piotr Dollár, and Ross Gir-
+supervision types and achieves consistent improvements on                   shick. Mask R-CNN. In CVPR, 2017. 1
+12 benchmarks, providing a clearer understanding of ViT's
+internal behavior and a solid baseline for future research.           [13] Yangji He, Weihan Liang, Dongyang Zhao, Hong-Yu Zhou,
+                                                                            Weifeng Ge, Yizhou Yu, and Wenqiang Zhang. Attribute
+8. Acknowledgments                                                          surrogates learning and spectral tokens pooling in transform-
+                                                                            ers for few-shot learning. In Proceedings of the IEEE/CVF
+This work is supported in part by the Hong Kong Research                    conference on computer vision and pattern recognition, pages
+Grants Council under Collaborative Research Fund (Project                   9119-9129, 2022. 1
+No. HKUC7004-22G) and the National Natural Science
+Foundation of China under Grant No.62576365.                          [14] Gabriel Ilharco, Mitchell Wortsman, Ross Wightman, Cade
+                                                                            Gordon, Nicholas Carlini, Rohan Taori, Achal Dave, Vaishaal
+References                                                                  Shankar, Hongseok Namkoong, John Miller, Hannaneh Ha-
+                                                                            jishirzi, Ali Farhadi, and Ludwig Schmidt. Openclip, 2021.
+ [1] Mathilde Caron, Hugo Touvron, Ishan Misra, Hervé Jégou,                If you use this software, please cite it as below. 2, 3, 8
+      Julien Mairal, Piotr Bojanowski, and Armand Joulin. Emerg-
+      ing properties in self-supervised vision transformers. In Pro-  [15] Nick Jiang, Amil Dravid, Alexei Efros, and Yossi Gandels-
+      ceedings of the International Conference on Computer Vision           man. Vision transformers don't need trained registers. arXiv
+      (ICCV), 2021. 1, 2, 3, 6, 7, 8                                        preprint arXiv:2506.08010, 2025. 3
+
+ [2] Xinlei Chen, Haoqi Fan, Ross Girshick, and Kaiming He. Im-       [16] Weicheng Kuo, Yin Cui, Xiuye Gu, AJ Piergiovanni, and
+      proved baselines with momentum contrastive learning. arXiv            Anelia Angelova. F-vlm: Open-vocabulary object detection
+      preprint arXiv:2003.04297, 2020. 1                                    upon frozen vision and language models. arXiv preprint
+                                                                            arXiv:2209.15639, 2022. 6, 7, 8
+ [3] Yinjie Chen, Zipeng Yan, Chong Zhou, Bo Dai, and Andrew F
+      Luo. Vision transformers with self-distilled registers. arXiv   [17] Mengcheng Lan, Chaofeng Chen, Yiping Ke, Xinjiang Wang,
+      preprint arXiv:2505.21501, 2025. 3                                    Litong Feng, and Wayne Zhang. Proxyclip: Proxy atten-
+                                                                            tion improves clip for open-vocabulary segmentation. arXiv
+ [4] Bowen Cheng, Ishan Misra, Alexander G. Schwing, Alexan-                preprint arXiv:2408.04883, 2024. 3
+      der Kirillov, and Rohit Girdhar. Masked-attention mask trans-
+      former for universal image segmentation. 2022. 1                [18] Junnan Li, Ramprasaath Selvaraju, Akhilesh Gotmare, Shafiq
+                                                                            Joty, Caiming Xiong, and Steven Chu Hong Hoi. Align
+ [5] Timothée Darcet, Maxime Oquab, Julien Mairal, and Piotr Bo-            before fuse: Vision and language representation learning
+      janowski. Vision transformers need registers. arXiv preprint          with momentum distillation. Advances in neural information
+      arXiv:2309.16588, 2023. 2, 3, 6                                       processing systems, 34:9694-9705, 2021. 2
+
+ [6] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li    [19] Yi Li, Hualiang Wang, Yiqun Duan, and Xiaomeng Li. Clip
+      Fei-Fei. Imagenet: A large-scale hierarchical image database.         surgery for better explainability with enhancement in open-
+      In 2009 IEEE conference on computer vision and pattern                vocabulary tasks, 2023. 3
+      recognition, pages 248-255. Ieee, 2009. 1, 3, 4, 8
+                                                                      [20] Haotian Liu, Chunyuan Li, Qingyang Wu, and Yong Jae Lee.
+ [7] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,                 Visual instruction tuning, 2023. 1
+      Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,
+      Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-        [21] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng
+      vain Gelly, et al. An image is worth 16x16 words: Trans-              Zhang, Stephen Lin, and Baining Guo. Swin transformer:
+      formers for image recognition at scale. arXiv preprint                Hierarchical vision transformer using shifted windows. In
+      arXiv:2010.11929, 2020. 1, 2, 3, 4, 6, 8                              Proceedings of the IEEE/CVF international conference on
+                                                                            computer vision, pages 10012-10022, 2021. 5
+ [8] Mark Everingham, Luc Van Gool, Christopher KI Williams,
+      John Winn, and Andrew Zisserman. The pascal visual object       [22] Meng Lou and Yizhou Yu. Overlock: An overview-first-look-
+      classes (voc) challenge. International journal of computer            closely-next convnet with context-mixing dynamic kernels.
+      vision, 88:303-338, 2010. 8                                           In Proceedings of the IEEE/CVF Conference on Computer
+                                                                            Vision and Pattern Recognition, pages 128-138, 2025. 1
+ [9] Yunxiang Fu, Meng Lou, and Yizhou Yu. Segman: Omni-
+      scale context modeling with state space models and local        [23] Meng Lou, Yunxiang Fu, and Yizhou Yu. Sparx: A sparse
+      attention for semantic segmentation. In Proceedings of the            cross-layer connection mechanism for hierarchical vision
+      Computer Vision and Pattern Recognition Conference, pages             mamba and transformer networks. In Proceedings of the AAAI
+      19077-19087, 2025. 1                                                  Conference on Artificial Intelligence, pages 19104-19114,
+                                                                            2025.
+
+                                                                      [24] Meng Lou, Shu Zhang, Hong-Yu Zhou, Sibei Yang, Chuan
+                                                                            Wu, and Yizhou Yu. Transxnet: learning both global and
+                                                                            local dynamics with a dual dynamic token mixer for visual
+      recognition. IEEE Transactions on Neural Networks and            [36] Feng Wang, Jieru Mei, and Alan Yuille. Sclip: Rethink-
+      Learning Systems, 2025. 1                                              ing self-attention for dense vision-language inference. In
+                                                                             European Conference on Computer Vision, pages 315-332.
+[25] Maxime Oquab, Timothée Darcet, Theo Moutakanni, Huy V.                  Springer, 2025. 2, 3
+      Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez,
+      Daniel Haziza, Francisco Massa, Alaaeldin El-Nouby, Russell      [37] Size Wu, Wenwei Zhang, Lumin Xu, Sheng Jin, Xiangtai Li,
+      Howes, Po-Yao Huang, Hu Xu, Vasu Sharma, Shang-Wen Li,                 Wentao Liu, and Chen Change Loy. Clipself: Vision trans-
+      Wojciech Galuba, Mike Rabbat, Mido Assran, Nicolas Ballas,             former distills itself for open-vocabulary dense prediction.
+      Gabriel Synnaeve, Ishan Misra, Herve Jegou, Julien Mairal,             arXiv preprint arXiv:2310.01403, 2023. 1, 3, 6, 7, 8
+      Patrick Labatut, Armand Joulin, and Piotr Bojanowski. Di-
+      nov2: Learning robust visual features without supervision,       [38] Monika Wysoczan´ska, Oriane Siméoni, Michaël Ramamon-
+      2023. 1, 3                                                             jisoa, Andrei Bursuc, Tomasz Trzcin´ski, and Patrick Pérez.
+                                                                             Clip-dinoiser: Teaching clip a few dino tricks. arXiv preprint
+[26] Bill Psomas, Ioannis Kakogeorgiou, Konstantinos Karantza-               arXiv:2312.12359, 2023. 3
+      los, and Yannis Avrithis. Keep it simpool: Who said super-
+      vised transformers suffer from attention deficit? In Proceed-    [39] Hu Xu, Saining Xie, Xiaoqing Ellen Tan, Po-Yao Huang, Rus-
+      ings of the IEEE/CVF International Conference on Computer              sell Howes, Vasu Sharma, Shang-Wen Li, Gargi Ghosh, Luke
+      Vision, pages 5350-5360, 2023. 1                                       Zettlemoyer, and Christoph Feichtenhofer. Demystifying clip
+                                                                             data. arXiv preprint arXiv:2309.16671, 2023. 6, 7
+[27] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya
+      Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry,            [40] Zhicheng Yan, Hao Zhang, Robinson Piramuthu, Vignesh
+      Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning             Jagadeesh, Dennis DeCoste, Wei Di, and Yizhou Yu. Hd-cnn:
+      transferable visual models from natural language supervi-              hierarchical deep convolutional neural networks for large
+      sion. In International conference on machine learning, pages           scale visual recognition. In Proceedings of the IEEE inter-
+      8748-8763. PMLR, 2021. 1, 2, 6, 7                                      national conference on computer vision, pages 2740-2748,
+                                                                             2015. 1
+[28] Christoph Schuhmann, Richard Vencu, Romain Beaumont,
+      Robert Kaczmarczyk, Clayton Mullis, Aarush Katta, Theo           [41] Yaodong Yu, Tianzhe Chu, Shengbang Tong, Ziyang Wu,
+      Coombes, Jenia Jitsev, and Aran Komatsuzaki. Laion-400m:               Druv Pai, Sam Buchanan, and Yi Ma. Emergence of segmen-
+      Open dataset of clip-filtered 400 million image-text pairs.            tation with minimalistic white-box transformers. In Confer-
+      arXiv preprint arXiv:2111.02114, 2021. 3                               ence on Parsimony and Learning, pages 72-93. PMLR, 2024.
+                                                                             7
+[29] Cheng Shi and Sibei Yang. Edadet: Open-vocabulary object
+      detection using early dense alignment. In Proceedings of         [42] Dengke Zhang, Fagui Liu, and Quan Tang. Corrclip: Re-
+      the IEEE/CVF International Conference on Computer Vision,              constructing correlations in clip with off-the-shelf foundation
+      pages 15724-15734, 2023. 6                                             models for open-vocabulary semantic segmentation. arXiv
+                                                                             preprint arXiv:2411.10086, 2024. 3
+[30] Cheng Shi and Sibei Yang. The devil is in the object bound-
+      ary: Towards annotation-free instance segmentation using         [43] Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun
+      foundation models. arXiv preprint arXiv:2404.11957, 2024.              Zhu, Lionel M Ni, and Heung-Yeung Shum. Dino: Detr
+      6                                                                      with improved denoising anchor boxes for end-to-end object
+                                                                             detection. arXiv preprint arXiv:2203.03605, 2022. 1, 2
+[31] Oriane Siméoni, Gilles Puy, Huy V Vo, Simon Roburin, Spy-
+      ros Gidaris, Andrei Bursuc, Patrick Pérez, Renaud Marlet,        [44] Chong Zhou, Chen Change Loy, and Bo Dai. Extract free
+      and Jean Ponce. Localizing objects with self-supervised trans-         dense labels from clip. In ECCV, 2022. 2, 3
+      formers and no labels. arXiv preprint arXiv:2109.14279,
+      2021. 1, 2, 6, 8                                                 [45] Yuchen Zhu, Cheng Shi, Dingyou Wang, Jiajin Tang, Zhengx-
+                                                                             uan Wei, Yu Wu, Guanbin Li, and Sibei Yang. Rethinking
+[32] Quan Sun, Yuxin Fang, Ledell Wu, Xinlong Wang, and Yue                  query-based transformer for continual image segmentation.
+      Cao. Eva-clip: Improved training techniques for clip at scale.         In Proceedings of the IEEE/CVF Conference on Computer
+      arXiv preprint arXiv:2303.15389, 2023. 6, 7, 8                         Vision and Pattern Recognition, pages 4595-4606, 2025. 1
+
+[33] Jiajin Tang, Ge Zheng, Cheng Shi, and Sibei Yang. Con-            [46] C Lawrence Zitnick and Piotr Dollár. Edge Boxes: Locating
+      trastive grouping with transformer for referring image seg-            Object Proposals from Edges. In ECCV. Springer, 2014. 8
+      mentation. In Proceedings of the IEEE/CVF conference on
+      computer vision and pattern recognition, pages 23570-23580,
+      2023. 1
+
+[34] Hugo Touvron, Matthieu Cord, Matthijs Douze, Francisco
+      Massa, Alexandre Sablayrolles, and Hervé Jégou. Training
+      data-efficient image transformers & distillation through atten-
+      tion. In International conference on machine learning, pages
+      10347-10357. PMLR, 2021. 2, 3, 6, 8
+
+[35] Jasper RR Uijlings, Koen EA Van De Sande, Theo Gev-
+      ers, and Arnold WM Smeulders. Selective search for object
+      recognition. International journal of computer vision, 104(2):
+      154-171, 2013. 8
+
