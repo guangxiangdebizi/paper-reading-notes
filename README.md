@@ -77,6 +77,7 @@
 - [视频抽帧压帧分支阅读路线图](./视频抽帧压帧分支阅读路线图.md)：把一整段视频变成几张有信息量的图片——镜头检测 → 光流 → 冗余剔除 → 关键帧/视频摘要 → 神经压缩 → VLM 帧采样，含顶会顶刊与阅读顺序。
 - [小模型vs大模型阅读链路](./小模型vs大模型阅读链路.md)：源自"过拟合与数据规模"讨论的独立链路——scaling law / 双下降 → 蒸馏与合成数据 → 算力分配 → benchmark 幻觉 → 剪枝冗余，清单只收顶会顶刊（9 篇），预印本与 workshop 文献归入背景文献供查证；将"条件拉齐则大模型必赢"立为阅读假设，逐篇验证。
 - [LLM 分支阅读路线图](./LLM分支阅读路线图.md)：以《LLMs can't jump》（Zahavy, Google DeepMind, 2026）为正主的"LLM 科学发现能力边界"链路——清单只收顶会顶刊（Si et al. ICLR 2025、Genie ICML 2024 两篇），正主与压力测试标本（AI Scientist、AlphaEvolve 等非顶会文献）归入背景文献供查证，附正主身份多渠道核查记录与 venue 复核记录。
+- [经典地基阅读路线图](./经典地基阅读路线图.md)：把 8 篇已精读笔记当作已知前提使用、但从未展开讲解的概念回溯到奠基论文——encoder/decoder 完整架构（Transformer）、decoder 掩码与 [CLS]（BERT）、骨干网基线（ResNet）、RPN/RoI（Faster R-CNN）、focal loss（RetinaNet）、AdamW/cosine/warmup/label smoothing/RandAugment 等，共 13 篇顶会顶刊，只登记、按需查阅，同一篇多次卡点可晋升四站精读。
 
 ---
 
