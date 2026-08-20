@@ -69,6 +69,7 @@
 | 2026/08 | [Swin](./2026/08/swin-paper/精读笔记/README.md)（Hierarchical Vision Transformer using Shifted Windows, ICCV 2021 Marr Prize） | 窗口内局部注意力（线性复杂度）+ patch merging 层级化 + 移位窗口保流通：ViT 从分类样板间变成检测/分割通吃的通用骨干网，COCO/ADE20K 双 SOTA，且任务越密集优势越大 |
 | 2026/08 | [DETR](./2026/08/detr-paper/精读笔记/README.md)（End-to-End Object Detection with Transformers, ECCV 2020） | 检测 = 直接集合预测：N 个可学习 object queries 并行输出 + 匈牙利一对一匹配损失，去 anchor/NMS，首次端到端打平加强版 Faster R-CNN（大目标 +7.8、小目标 -5.5），并顺手拿下全景分割 PQ 第一 |
 | 2026/08 | [MAE](./2026/08/mae/精读笔记/README.md)（Masked Autoencoders Are Scalable Vision Learners, CVPR 2022） | 非对称 encoder-decoder + 75% 高掩码比例：遮随机 patch、重建像素，精度与效率双赢（加速 3×+）；vanilla ViT-Huge 仅 IN1K 无标签达 87.8%，检测/分割迁移全面超越监督预训练且随规模持续涨点 |
+| 2026/08 | [Transformer](./2026/08/transformer-paper/精读笔记/README.md)（Attention Is All You Need, NIPS 2017） | 完全基于多头自注意力取代循环与卷积，O(1) 串行步数换高度并行，WMT14 英德/英法双 SOTA（28.4/41.8，单机 8 卡 12 小时/3.5 天），成分句法分析验证任务通用性——整个 Transformer 时代的起点（《经典地基阅读路线图》第 1 篇晋升四站精读） |
 
 ## 🗺️ 阅读路线图
 
