@@ -62,6 +62,7 @@
 
 | 归档 | 论文 | 一句话总结 |
 |---|---|---|
+| 2026/08 | [Registers](./2026/08/registers/精读笔记/README.md)（Vision Transformers Need Registers, ICLR 2024） | 大而且训练充分的 ViT 会把少数输入冗余 patch 从局部空间表示复用为高范数全局计算载体；4 个无空间位置、无直接输出监督的 register token 以低于 2% FLOPs 隔离该行为，使 high-norm 与全局信息从 patch 迁移到 registers，平滑特征图并改善部分密集任务，但训练根因仍未解释 |
 | 2026/08 | [ViT](./2026/08/vit-paper/精读笔记/README.md)（An Image is Worth 16×16 Words, ICLR 2021） | 大规模训练，能够战胜归纳偏置 |
 | 2026/08 | [DeiT](./2026/08/deit-paper/精读笔记/README.md)（Training Data-Efficient Image Transformers, ICML 2021） | 没有大数据时：借配方（强增强）+ 借先验（蒸馏 token），单机 3 天训出能打的 ViT |
 | 2026/08 | [RAFT](./2026/08/raft-paper/精读笔记/README.md)（Recurrent All-Pairs Field Transforms for Optical Flow, ECCV 2020 Best Paper） | 把经典光流优化翻译成端到端网络：特征、先验、下降方向全部学出来；循环查表，单一分辨率流场 |
