@@ -3,6 +3,7 @@
 > 以 **Vision Transformer（ViT, ICLR 2021）** 为根的一条大分支：从"纯 Transformer 进入视觉"出发，沿四条主线把这条脉络读完。
 > 本文档随精读进度维护：读完一篇就在状态列打勾，并在下方"精读记录"补一行链接。
 > **下游拓展**：主线（A–D）之外的 ViT 家族后续演进（2022–2026）统一登记在《[ViT 家族拓展阅读路线图](./ViT家族拓展阅读路线图.md)》，主线读完后按该图继续。
+> **当前状态**：A–D 四条主线共 8 篇已全部精读完成。
 
 ---
 
@@ -54,7 +55,7 @@
 
 | # | 论文 | 发表 | 一句话 | 状态 |
 |---|---|---|---|---|
-| 6 | **Registers**：Vision Transformers Need Registers | ICLR 2024 | 大规模预训练的 ViT 特征图里出现 artifact 高响应区，模型拿高范数垃圾 token 当"垃圾桶"，加几个可学习 register token 即可修复 | ⏳ 待读 |
+| 6 | **Registers**：Vision Transformers Need Registers | ICLR 2024 | 大而且训练充分的 ViT 会把少数低信息 patch token 复用为高范数全局计算载体，牺牲局部空间信息；加入专用 register token 可隔离该行为 | ✅ 已读（[笔记](./2026/08/registers/精读笔记/README.md)） |
 | 7 | **LAST-ViT**：Vision Transformers Need More Than Registers | CVPR 2026 | 上一问的续作：artifact 的根源是"懒惰聚合"——ViT 拿无关背景 patch 当全局语义的捷径；用频域 token 选择替代标准 CLS token，三种监督范式下 12 个 benchmark 全面提升 | ✅ 已读（[笔记](./2026/08/last-vit/精读笔记/README.md)） |
 
 > 🕳️ 先记在"未来再说"坑里的：BEiT（遮块预测离散 token）、Segmentation Transformer 系（SETR 等）、Scaling Law 系（ViT-22B 等）、多模态系（CLIP 等）。其中 BEiT、ViT-22B、CLIP 系已于 2026-08-12 纳入《[ViT 家族拓展阅读路线图](./ViT家族拓展阅读路线图.md)》统一登记；核心八篇读完后按该图继续拓展。
@@ -65,6 +66,7 @@
 
 | 归档 | 论文 | 一句话收获 |
 |---|---|---|
+| [2026/08/registers](./2026/08/registers/精读笔记/README.md) | Registers | 大而且训练充分的 ViT 会把少数输入冗余 patch 从局部空间表示复用为高范数全局计算载体（DINOv2-g 示例约 2.37%）；4 个无空间位置、无直接输出监督的 register token 以低于 2% FLOPs 隔离该行为，high-norm 与全局分类能力从 patch 迁移到 registers，DINOv2 LOST VOC07 `35.3→55.4`，但 OpenCLIP LOST 反而下降且训练根因未明 |
 | [2026/08/vit-paper](./2026/08/vit-paper/精读笔记/README.md) | ViT | 大规模训练战胜归纳偏置；纯 Transformer 可行且算力效率高 |
 | [2026/08/deit-paper](./2026/08/deit-paper/精读笔记/README.md) | DeiT | 架构不变，靠 CNN 时代配方（强增强）+ 蒸馏 token 借归纳偏置，单机 ImageNet 训出 85.2% |
 | [2026/08/convnext-paper](./2026/08/convnext-paper/精读笔记/README.md) | ConvNeXt | 零注意力逐步翻新 ResNet（配方 +2.7、减法设计、7×7 即饱和），纯 ConvNet 反超 Swin：性能差距的大头在配方与设计，不在注意力 |
@@ -83,5 +85,5 @@
 4. **Swin** 回答另一个短板：ViT 的全局注意力又贵又只能做分类；Swin 用窗口+层次让它**便宜且能接检测/分割**。
 5. **DETR** 展示 Transformer 改写检测任务本身（集合预测），与 Swin 骨干网结合就是今天的检测主流。读完确认：端到端的代价（500 epoch 收敛、小目标弱）被论文自己列成清单，后续 Deformable DETR 系工作逐一攻克——详见拓展阅读路线图。
 6. **MAE** 回到 ViT §4.6 那个 79.9% 的初步实验，把"遮块重建"做成可扩展的自监督范式，闭环。读完确认：75% 掩码比例同时兑现任务难度与训练效率（encoder 只算 25% patch，加速 3×+）；迁移学习全面超越监督预训练且随模型规模持续涨点，视觉自监督自此走上 NLP 式 scaling 轨迹；"像素重建逼出语义表示"的机理问题留给主线 D 的表示行为研究。
-7. **Registers** 提出主线 D 的起点问题：ViT 跑起来之后，CLS token 到底是怎么聚合全局信息的？大规模预训练模型的 patch 特征图里普遍存在 artifact 高响应区（尤其在 DINOv2 类自监督模型上最刺眼），根因是模型拿少数高范数的"垃圾 token"充当注意力的垃圾桶——加几个可学习的 register token 接住它们，特征图立刻干净。这篇回答了"CLS token 的聚合行为有毛病，而且可以修"。
+7. **Registers** 提出主线 D 的起点问题：大规模预训练 ViT 的 patch token 是否仍可靠保留局部空间语义？论文发现，大而且训练充分的模型会优先挑中输入冗余的 patch，把它们从局部表示复用为高范数全局计算载体；位置/像素 probing 下降而整图分类 probing 大幅上升。加入若干不对应图像位置的 register token 后，高范数与全局分类能力转移到 registers，普通 patch 的局部信息基本不变，特征图与部分密集任务改善。这篇完成"发现症状 → 功能诊断 → 隔离修复"，但明确没有确定训练根因。
 8. **LAST-ViT** 顺着 Registers 继续追问：register 只是把症状压住，**毛病的根源是什么**？答案是"懒惰聚合"——在全局注意力 + 粗粒度语义监督（一张图一个标签）下，ViT 学会了走捷径：把语义无关的背景 patch 当成表示全局语义的跳板，CLS token 因此被背景污染。解法是用频域 token 选择替代标准 CLS token，只让语义相关的 patch 参与全局聚合；标签、文本、自监督三种范式下 12 个 benchmark 一致提升。主线 D 至此完成"发现症状（Registers）→ 解释病因并对症修正（LAST-ViT）"的闭环。
