@@ -1,0 +1,6 @@
+# 知识图谱数据库实体（34MB 二进制，由 data/*.yaml 跑 build_graph.py 重建；db 是指向 ASCII 路径的 junction）
+knowledge_graph/db/
+
+# Python 缓存
+__pycache__/
+*.pyc

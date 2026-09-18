@@ -1,0 +1,146 @@
+paper:
+  id: raft
+  title: "RAFT: Recurrent All-Pairs Field Transforms for Optical Flow"
+  aliases: ["RAFT", "Recurrent All-Pairs Field Transforms"]
+  authors: "Teed & Deng"
+  affiliation: "Princeton University"
+  year: 2020
+  venue: "ECCV 2020 Best Paper"
+  arxiv: "2003.12039"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/raft-paper/精读笔记"
+  source: "paper-reading-notes/2026/08/raft-paper/精读笔记/README.md"
+  problem: |
+    光流是长期未解的老问题，四大天敌：快速移动物体、遮挡、运动模糊、无纹理表面。传统方法把光流写成手工设计的优化问题（数据项+正则项），瓶颈在于"手工设计的目标函数，永远堵不完各种角落情况的洞"；2020 年初的深度方法也只是"追平"传统方法、更快但没超越。研究问题：更好、更好训、更能泛化。
+  contributions:
+    - "设计哲学 learning to optimize：把经典光流优化框架整体翻译成端到端网络——特征编码器+相关层=数据项（特征靠学）、GRU 更新单元+context 网络=正则项（先验靠学）、循环查表更新=迭代下降（下降方向靠学）；'骨架照搬经典优化，血肉全部换成可学习的'（01_摘要与引言.md）"
+    - "单一高分辨率流场，废除 coarse-to-fine：克服'粗层猜错后面难纠正、小而快的物体在粗层直接消失、多级级联要训 100 万+ 迭代'三大毛病；大位移靠多尺度相关金字塔解决，不需要图像金字塔；流场从零开始迭代，视频序列可用 warm-start（01_摘要与引言.md）"
+    - "轻量循环更新器：仅 2.7M 参数、权重共享，推理时可应用 100+ 次不发散；迭代次数变成自由超参，循环单元收敛到不动点（明确致敬 Deep Equilibrium Models）（01_摘要与引言.md）"
+    - "查 4D 多尺度相关体的卷积 GRU：前人 refine 模块只会用普通卷积或单层相关，RAFT 的 GRU 每一轮都重新去全量 4D 相关体里查证据——每轮都在'重看全部原始证据'（01_摘要与引言.md）"
+  key_results:
+    - "KITTI F1-all 5.10%，相对前最佳 6.10% 错误降 16%，KITTI 光流榜所有方法中第一（01_摘要与引言.md）"
+    - "Sintel final EPE 2.855，相对前最佳 4.098 错误降 30%；test 榜 clean 1.61、final 2.86 两个 pass 均第一（clean 比前人最好低 36%）（01/03_实验与消融.md）"
+    - "泛化：只用合成数据训练直接测真实 KITTI，EPE 从 8.36 降到 5.04（错误降 40%）（01/03_实验与消融.md）"
+    - "消融贡献度（KITTI F1-all，基准 19.8）：Warping 替代相关体 32.1（致命 +12.3，宣判 PWC 时代终结）、相关范围砍到 32px 28.8、普通卷积替代 ConvGRU 26.1、不共享权重 24.1（且参数 4.8M→32.5M）（03_实验与消融.md）"
+    - "收敛曲线：3 次迭代超过 PWC-Net、6 次超过 FlowNet2；200 次迭代不发散，‖Δf‖ 随迭代指数衰减——数学上收敛到不动点的实测证据（03_实验与消融.md）"
+    - "效率：1080Ti 上 1088×436 视频 10 FPS；训练 200k 迭代 vs FlowNet2 7000k；RAFT-S 仅 1.0M 参数打赢 6 倍大的 PWC-Net 与 VCN；混合精度单卡可训（01/03/04_结论与附录精华.md）"
+    - "泛化机理：'循环结构本身就是正则化'——约束光流为一系列相同更新步的乘积，逼网络学一阶下降算法的更新算子，约束搜索空间、降低过拟合风险、更快训练更好泛化（03_实验与消融.md）"
+  concepts:
+    - id: learning_to_optimize
+      name: "Learning to Optimize 设计哲学"
+      detail: "把传统优化框架翻译成可学习网络：手工像素匹配代价→特征编码器+相关层、手工运动平滑先验→GRU 更新单元+context 网络、迭代下降梯度步→循环查表更新；特征、先验、下降方向全部学出来"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/01_摘要与引言.md"
+    - id: raft_dual_encoder
+      name: "特征/上下文双编码器"
+      detail: "特征编码器 g_θ（两帧都用，1/8 分辨率 256 维、6 残差块，InstanceNorm 去掉跨帧亮度差异）管'匹配'；上下文编码器 h_θ（只用 I1，BatchNorm）管'先验'；两者只跑一次，后续迭代不再碰"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/02_方法_三件套拆解.md"
+    - id: correlation_pyramid
+      name: "4D 全配对相关体 + 相关金字塔"
+      detail: "I1 与 I2 全部像素对特征做内积得 4D 相关体 C∈H×W×H×W（一次大矩阵乘法）；对后两维（I2 侧）按核 1/2/4/8 池化成 4 层金字塔——只池化查询侧：I1 侧恒全分辨率（抓小快物体）+ 索引分层（抓大位移），一个结构解掉 coarse-to-fine 两大死穴；O(N²) 只算一次，实测 1080p 下仅占推理时间 17%"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/02_方法_三件套拆解.md"
+    - id: conv_gru_updater
+      name: "权重共享 ConvGRU 循环更新器"
+      detail: "每轮迭代吃三路输入（查表证据/当前流/上下文先验），ConvGRU 门控 + tanh 有界激活 + 跨深度共享权重，鼓励收敛到不动点；权重共享使迭代次数成为自由超参（训练 12 次、推理 Sintel 32 次/KITTI 24 次），f0=0 起步、视频序列 warm-start"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/02_方法_三件套拆解.md"
+    - id: sequence_supervision_loss
+      name: "序列监督损失"
+      detail: "L = Σ γ^(N−i)·‖f_gt − f_i‖₁（γ=0.8）：每一轮中间预测都算 L1 损失、权重指数递增；梯度直接打到每个迭代步，逼每轮更新都朝正确答案走"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/02_方法_三件套拆解.md"
+    - id: convex_upsampling
+      name: "学习式凸组合上采样"
+      detail: "为每个粗分辨率像素学习 3×3 网格 9 个邻居的 softmax 混合权重，把 1/8 分辨率流凸组合上采样到全分辨率；运动边界处可学会偏向一侧，不像双线性插值把遮挡边界糊成一片"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/02_方法_三件套拆解.md"
+  datasets:
+    - name: "FlyingChairs"
+      role: "pretrain"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/03_实验与消融.md"
+    - name: "FlyingThings3D"
+      role: "pretrain"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/03_实验与消融.md"
+    - name: "Sintel"
+      role: "finetune+eval"
+      metrics: "test clean 1.61 / final 2.86 双第一；纯合成训练（C+T）train final 2.71（03_实验与消融.md）"
+    - name: "KITTI"
+      role: "finetune+eval"
+      metrics: "F1-all 5.10%；纯合成训练 EPE 8.36→5.04（03_实验与消融.md）"
+    - name: "HD1K"
+      role: "finetune"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/03_实验与消融.md"
+    - name: "DAVIS"
+      role: "eval"
+      metrics: "1088×1920 压力测试 12 次迭代 550ms/帧，全配对相关仅占 95ms（03_实验与消融.md）"
+  problems:
+    - id: optical_flow_corner_cases
+      description: "光流四大天敌（快速移动物体、遮挡、运动模糊、无纹理表面）；手工设计优化目标难以鲁棒覆盖各种角落情况"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/01_摘要与引言.md"
+  relates:
+    - to: horn_schunck
+      rel_type: INHERITS
+      detail: "继承经典优化框架的骨架：数据项 + 正则项 + 迭代下降的对照表逐行翻译成可学习对应物（特征编码器+相关层 / context 网络+GRU / 循环查表更新），'骨架照搬经典优化，血肉全部换成可学习的'"
+      evidence: "The RAFT architecture is motivated by traditional optimization-based approaches. ... But unlike traditional approaches, features and motion priors are not handcrafted but learned."
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: pwc_net
+      rel_type: SUPERSEDES
+      detail: "正面判决 PWC-Net 路线：warping 式 refine 在 KITTI F1-all 上 32.1 vs 相关体查表 19.8——warping 在遮挡和大位移处搬错特征、误差滚雪球，'宣判了 PWC 时代的终结'"
+      evidence: "in contrast, refinement modules in prior work typically use only plain convolution or correlation layers ... Warping（把 I2 特征扭曲到 I1 再估残差）... F1-all 19.8 vs 32.1"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: flownet2
+      rel_type: SUPERSEDES
+      detail: "全面碾压 FlowNet 系：FlowNet2 162M 参数/7000k 训练迭代、Sintel final 3.54，RAFT 5.3M/200k、2.83；Sintel 裸考比 FlowNet2 错误低 29%"
+      evidence: "a 29% lower error than FlowNet2 ... despite using a significantly shorter training schedule"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/03_实验与消融.md"
+      confidence: high
+    - to: flownet2
+      rel_type: BORROWS
+      detail: "借鉴 FlowNet2 的梯度截断技巧：反向传播只让梯度走 Δf 分支、f_k 分支梯度清零，避免梯度穿过所有展开的迭代步，省显存又稳"
+      evidence: "只让梯度走 Δf 分支，把 f_k 分支的梯度清零（学自 FlowNet2）"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/02_方法_三件套拆解.md"
+      confidence: high
+    - to: irr
+      rel_type: CONTRAST
+      detail: "IRR 是唯一前人循环方案：用 FlowNetS 当更新单元（38M、≤5 次迭代）；RAFT 用 2.7M 轻量单元、100+ 次迭代不发散"
+      evidence: "IRR（唯一前人循环方案）... 38M（用 FlowNetS 当单元）... RAFT 2.7M ... 100+ 次不发散"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: hsm_net
+      rel_type: BORROWS
+      detail: "遮挡增强（以 0.5 概率随机擦掉 I2 中的矩形区域、只擦 I2 不擦 I1，模拟遮挡）学自 HSM-Net"
+      evidence: "以 0.5 概率随机擦掉 I2 中的矩形区域（学自 HSM-Net）"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/04_结论与附录精华.md"
+      confidence: high
+    - to: deep_equilibrium
+      rel_type: BORROWS
+      detail: "不动点思想致敬 Deep Equilibrium Models：权重共享 + 有界激活鼓励收敛到不动点，循环单元模拟收敛的优化过程"
+      evidence: "循环单元收敛到不动点（fixed point），作者明确致敬了 Deep Equilibrium Models"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: flowformer
+      rel_type: PROVIDES_RECIPE
+      detail: "RAFT 成为后续工作的事实标准基座：光流从'各种专用架构混战'变成'RAFT + 在它上面改'，FlowFormer（Transformer 化）是路线图环节②的后续"
+      evidence: "在它之后该领域基本被'统治'了好几年，后来的工作几乎都在它的框架上改进 ... 后续 FlowFormer/CoTracker/视频理解的运动基座"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/04_结论与附录精华.md"
+      confidence: high
+    - to: cotracker
+      rel_type: PROVIDES_RECIPE
+      detail: "同上：CoTracker（从光流到点跟踪）与视频理解以 RAFT 为运动基座"
+      evidence: "遗产：光流事实标准；后续 FlowFormer/CoTracker/视频理解的运动基座"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/04_结论与附录精华.md"
+      confidence: high
+    - to: vit
+      rel_type: CORROBORATES
+      detail: "跨分支方法论呼应（R-04 对照表）：对归纳偏置态度相反（ViT 拿掉用大数据换，RAFT 放进结构里而非手工特征），但共同方法论是'不发明新轮子'——把一个领域验证过的结构搬过来、把血肉换成可学习的"
+      evidence: "两条分支的共同方法论：不发明新轮子，而是把一个领域验证过的'结构'搬到另一个领域，把血肉换成可学习的"
+      source: "paper-reading-notes/2026/08/raft-paper/精读笔记/04_结论与附录精华.md"
+      confidence: high
+  belongs_to:
+    - topic: t_video_frame
+      order: 5
+      source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"

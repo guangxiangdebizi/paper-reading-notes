@@ -1,0 +1,155 @@
+paper:
+  id: registers
+  title: "Vision Transformers Need Registers"
+  aliases: ["Registers", "register tokens"]
+  authors: "Timothée Darcet, Maxime Oquab, Julien Mairal, Piotr Bojanowski"
+  affiliation: "FAIR / Inria"
+  year: 2024
+  venue: "ICLR 2024"
+  arxiv: "2309.16588"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/registers/精读笔记"
+  source: "paper-reading-notes/2026/08/registers/精读笔记/01_摘要与引言_问题是怎么发现的.md"
+  problem: |
+    DINOv2 的冻结特征在线性分割/深度评估上很强，却与依赖局部特征平滑性的无监督目标发现方法 LOST
+    出人意料地不兼容——aggregate benchmark 变好不代表裸 patch feature map 的几何结构干净。论文识别
+    并刻画了监督与自监督 ViT 特征图中的 artifact：推理时主要出现在低信息背景区域的 high-norm patch
+    token 被重新用于内部计算，破坏特征图/注意力图的平滑性。（01_摘要与引言_问题是怎么发现的.md）
+  contributions:
+    - "识别并刻画监督（DeiT-III）、文本监督（OpenCLIP）与自监督（DINOv2）ViT 特征图中的 artifact——'DINO-v1 的干净注意力图可能才是例外'（.../01_摘要与引言_问题是怎么发现的.md）"
+    - "artifact 的可测定义与定量刻画：输出 patch token L2 范数双峰、约 10× 范数离群、约 2.37% token 超人工阈值（DINOv2-g 取 150）；出现条件三要素（.../01、.../02_诊断_high-norm_token里有什么.md）"
+    - "功能替换证据链：outlier 丢失局部信息（位置 Top-1 41.7→22.8、像素重建 18.38→25.23）、获得全局信息（14 个数据集单 token 分类全面优于 normal），'局部空间表示 → 全局计算载体'（.../02_诊断_high-norm_token里有什么.md）"
+    - "register token 方案：patch embedding 后插入 K 个可学习向量（默认 K=4），参与各层 self-attention、输出时丢弃；无直接监督、间接优化；K=1 即消除可见 artifact、K=4 增量 FLOPs <2%（.../03_方法_register_token.md）"
+    - "干预验证：high-norm 行为与全局分类能力都迁移到 registers（Fig 15、Table 4：Aircraft outlier 73.3 → register 71.1），普通 patch 局部信息几乎不变（Table 5）（.../03_方法_register_token.md）"
+    - "跨三范式 + 下游任务检验：DeiT-III / OpenCLIP / DINOv2 加 registers 后 patch norm 离群均消失；LOST CorLoc 大幅改善（DINOv2 +20.1/+19.8/+15.1）（.../03、.../04_实验_边界与LAST-ViT.md）"
+  limitations:
+    - "训练根因未明：作者明确承认尚未完全确定哪些训练因素导致 artifact，只观察到与训练范式、规模、训练长度的相关（.../04_实验_边界与LAST-ViT.md）"
+    - "norm > 150 是 DINOv2-g 上的人工阈值，不能直接跨模型使用；'约 10 倍''约 2%'是所分析模型上的经验量级（.../02_诊断_high-norm_token里有什么.md）"
+    - "未证明免重训修复：实验均从训练阶段加入 registers，没有证明向既有模型事后插 token 即可修复（.../04_实验_边界与LAST-ViT.md）"
+    - "register 数量理论缺失：4 是密集任务效果与成本间的经验折中，不是理论常数；不同任务最优数量不同（.../03_方法_register_token.md）"
+    - "register 分工仅有定性证据：注意力模式有差异，但没有稳定性、解耦度或跨随机种子的量化（.../03_方法_register_token.md、.../04_实验_边界与LAST-ViT.md）"
+    - "非全任务收益：OpenCLIP 加 register 后特征图变干净但 LOST 反而降 1.7/2.3/3.1；DeiT-III 深度轻微变差——不是所有指标单调改善（.../04_实验_边界与LAST-ViT.md）"
+    - "因果根源未及：证明了 high-norm 功能可被隔离，没有证明背景全局语义最初为什么产生、何时开始污染（.../04_实验_边界与LAST-ViT.md）"
+  key_results:
+    - "artifact 定量：DINOv2 ViT-g/14 输出 patch token 范数约 10× 离群、2.37% 超人工阈值 150；DINOv2 中约第 15/40 层开始分叉、训练约三分之一后涌现、仅 Large/Huge/giant 出现（.../01、.../02_诊断_high-norm_token里有什么.md）"
+    - "功能替换证据链：位置 Top-1 41.7→22.8（平均距离 0.79→5.09）、像素重建误差 18.38→25.23；Table 1 的 14 个数据集上单 outlier token 分类全面优于 normal（Aircraft 79.1 vs 17.1，常接近 CLS）（.../02_诊断_high-norm_token里有什么.md）"
+    - "Table 2 密集预测：DINOv2+reg ADE20k 46.6→47.9 mIoU、NYUd RMSE 0.378→0.366；分类不退化（84.3→84.8）；DeiT-III/OpenCLIP 变化甚微——'不退化并在部分场景改善'（.../04_实验_边界与LAST-ViT.md）"
+    - "Table 3 LOST 压力测试：DINOv2+reg CorLoc 55.4/60.0/42.0（VOC07/VOC12/COCO20k，+20.1/+19.8/+15.1）；DeiT-III +15.4/+19.6/+14.4；但 DINOv2+reg 55.4 仍低于 DINO-v1 的 61.9（.../04_实验_边界与LAST-ViT.md）"
+    - "K 消融：K=1 即消除可见 attention artifact；K=4 为默认经验折中、FLOPs 增量 <2%（K=16 约 6%）、参数增量可忽略（.../03_方法_register_token.md）"
+    - "干预验证：Fig 15 高范数从 patch 集合转移到 registers；Table 4 Aircraft 单 token 分类 outlier 73.3 消失、register 达 71.1；Table 5 普通 patch 位置 66.3→65.8、重建 15.9→16.0 几乎不变（.../03_方法_register_token.md）"
+    - "OpenCLIP 反例：加 register 后 K/Q/V 特征图都更干净，LOST 却降 1.7/2.3/3.1——作者推测 outlier 落在 W_V 投影零空间，'表示中存在异常'与'下游实际消费到异常'必须分开（.../04_实验_边界与LAST-ViT.md）"
+    - "两个无明显 artifact 的例外：DINO-v1 注意力图平滑；Appendix E 的 MAE ViT-L PCA 特征图无明显 artifact（作者假设局部重建目标阻止 token 被挪用；跨方法观察非受控消融）（.../04_实验_边界与LAST-ViT.md）"
+  concepts:
+    - id: high_norm_artifact
+      name: "Artifact / High-norm Token"
+      detail: "输出 patch token L2 范数双峰、约 10× 离群、约 2.37% 超阈值；出现条件三要素：40 层 ViT-g 约第 15 层分叉、训练约 1/3 后涌现、DINOv2 仅 L/H/g 出现（范式会改变门槛）；high norm 是检测信号，不等于根因"
+      origin: "本文"
+      source: ".../01_摘要与引言_问题是怎么发现的.md、.../02_诊断_high-norm_token里有什么.md"
+    - id: functional_replacement
+      name: "功能替换证据链"
+      detail: "outlier 对应输入端邻域余弦相似度接近 1 的冗余 patch；局部信息线性可读性下降（位置 41.7→22.8、重建 18.38→25.23），全局分类信息增强（单 token probing 14 数据集全面优于 normal）——'局部空间表示 → 全局计算载体'"
+      origin: "本文（'垃圾桶'是作者对功能的解释性推断，非直接观测）"
+      source: ".../02_诊断_high-norm_token里有什么.md"
+    - id: register_token
+      name: "Register Token"
+      detail: "patch embedding 后插入的 K 个可学习向量（默认 K=4），无图像位置编码、不编码输入内容；参与每层 self-attention、输出时丢弃（不等于推理时删除）；无直接监督、通过影响 CLS/patch 表示间接优化；K=1 即消除可见 artifact"
+      origin: "本文（形式最接近 Memory Transformer 的 memory token）"
+      source: ".../03_方法_register_token.md"
+    - id: intervention_validation
+      name: "干预验证（行为迁移）"
+      detail: "解法本身也是因果探针：加 register 后 high-norm 迁移到 registers（Fig 15）、全局分类能力随之迁移（Table 4：outlier 73.3 → register 71.1）、普通 patch 局部信息几乎不变（Table 5）——支持'模型本来就需要内部计算槽位'"
+      origin: "本文"
+      source: ".../03_方法_register_token.md"
+  datasets:
+    - name: "ImageNet-1k"
+      role: "eval（线性分类；Table 1 单 token probing）"
+      metrics: "DINOv2+reg 84.8（84.3）；Table 1 单 token：outlier 69.0 vs normal 65.8（CLS 86.0）"
+      source: ".../02_诊断_high-norm_token里有什么.md、.../04_实验_边界与LAST-ViT.md"
+    - name: "ADE20k"
+      role: "eval（线性分割）"
+      metrics: "DINOv2 46.6 → DINOv2+reg 47.9 mIoU"
+      source: ".../04_实验_边界与LAST-ViT.md"
+    - name: "NYUd（NYU Depth v2）"
+      role: "eval（单目深度估计）"
+      metrics: "DINOv2 RMSE 0.378 → +reg 0.366"
+      source: ".../04_实验_边界与LAST-ViT.md"
+    - name: "VOC07 / VOC12 / COCO20k"
+      role: "eval（LOST 无监督目标发现，CorLoc）"
+      metrics: "DINOv2+reg 55.4 / 60.0 / 42.0（DINOv2 35.3 / 40.2 / 26.9；DINO-v1 VOC07 61.9）"
+      source: ".../04_实验_边界与LAST-ViT.md"
+    - name: "Aircraft / CUB / Cars / Flowers / Pets / SUN / VOC 等 14 个数据集"
+      role: "eval（单 token 线性分类 probing，Table 1/4）"
+      metrics: "Aircraft：outlier 79.1 vs normal 17.1；加 register 后 outlier 73.3 消失、register 71.1（Table 4）"
+      source: ".../02_诊断_high-norm_token里有什么.md、.../03_方法_register_token.md"
+    - name: "ImageNet-22k"
+      role: "pretrain（DeiT-III / OpenCLIP / DINOv2 三范式重训练数据）"
+      source: ".../03_方法_register_token.md"
+  problems:
+    - id: vit_artifact_dense_tasks
+      description: "大规模 ViT 特征图/注意力图出现尖锐 artifact，破坏直接依赖局部特征平滑性与相似度结构的任务（如 LOST 无监督目标发现）；线性分割/深度头能学过滤器兜底，裸特征消费方不能（.../01_摘要与引言_问题是怎么发现的.md）"
+      source: ".../01_摘要与引言_问题是怎么发现的.md"
+  relates:
+    - to: dinov2
+      rel_type: USES_AS_TOOL
+      detail: "研究对象与诊断修复的主载体：DINOv2 ViT-g 是 artifact 定量刻画的分析样本，DINOv2（重训）±register 是干预验证与下游评测的主要对照"
+      evidence: "Despite the strong performance on dense tasks, we observed that DINOv2 is surprisingly incompatible with LOST."
+      source: ".../01_摘要与引言_问题是怎么发现的.md"
+      confidence: high
+    - to: dinov2
+      rel_type: IMPROVES
+      detail: "register token 修复 DINOv2 的 artifact：ADE20k 46.6→47.9、NYUd 0.378→0.366、LOST VOC07 35.3→55.4；但未恢复 DINO-v1 的全部无监督发现能力（55.4 < 61.9）"
+      evidence: "DINOv2+reg：55.4 / 60.0 / 42.0（VOC07/VOC12/COCO20k）；ADE20k 46.6→47.9"
+      source: ".../04_实验_边界与LAST-ViT.md"
+      confidence: high
+    - to: dino
+      rel_type: CONTRAST
+      detail: "DINO-v1 是干净注意力的例外而非 DINOv2 独占异常：Fig 2 中除 DINO-v1 外的现代 ViT 都有尖锐离群；LOST 上 DINOv2+reg 55.4 仍低于 DINO-v1 61.9——high-norm artifact 不是两者局部行为差异的完整解释"
+      evidence: "除 DINO-v1 外，其余展示的现代 ViT 都有尖锐离群响应。因此……DINO-v1 的干净注意力图可能才是例外，artifact 更接近大规模 ViT 的常见行为。"
+      source: ".../01_摘要与引言_问题是怎么发现的.md、.../04_实验_边界与LAST-ViT.md"
+      confidence: high
+    - to: deit
+      rel_type: USES_AS_TOOL
+      detail: "DeiT-III 作为标签监督范式的实验对象：重训 ±register 两版本验证方案不依赖 DINOv2 特定损失；其 LOST CorLoc +15.4/+19.6/+14.4"
+      evidence: "作者分别训练：DeiT-III ViT-B：标签监督……每种方法都训练无 register 与有 register 两个版本。"
+      source: ".../03_方法_register_token.md、.../04_实验_边界与LAST-ViT.md"
+      confidence: high
+    - to: clip
+      rel_type: USES_AS_TOOL
+      detail: "OpenCLIP 作为文本监督范式对象兼关键反例：加 register 后 K/Q/V 特征图变干净，但 LOST 略降（1.7/2.3/3.1）——outlier 落在 W_V 零空间，LOST 用的 value 表示此前已过滤离群"
+      evidence: "加 register 后 K/Q/V 都更干净，但 LOST 实际使用的 value 表示此前已过滤掉离群。"
+      source: ".../04_实验_边界与LAST-ViT.md"
+      confidence: high
+    - to: lost
+      rel_type: USES_AS_TOOL
+      detail: "LOST 作为压力测试工具：不训练分割头、直接消费冻结 patch 特征相似度与平滑性，比线性头更能暴露 artifact；论文的出发点正是'DINOv2 与 LOST 出人意料地不兼容'"
+      evidence: "Despite the strong performance on dense tasks, we observed that DINOv2 is surprisingly incompatible with LOST."
+      source: ".../01_摘要与引言_问题是怎么发现的.md、.../04_实验_边界与LAST-ViT.md"
+      confidence: high
+    - to: memory_transformer
+      rel_type: DISTINGUISHES
+      detail: "形式先例区分：register 形式上最接近 memory token，创新不在'第一次发明额外 token'，而在新的行为解释——ViT 原本已经会把普通 patch 当 memory，显式 register 是把该行为从空间 token 中隔离出来"
+      evidence: "形式上它最接近 Memory Transformer 的 memory token，创新不在'第一次发明额外 token'，而在新的行为解释。"
+      source: ".../03_方法_register_token.md"
+      confidence: high
+    - to: mae
+      rel_type: CONTRAST
+      detail: "MAE 是没有明显 artifact 的例外（Appendix E：MAE ViT-L PCA 特征图干净）；作者假设局部重建目标直接作用于 patch、使模型不能轻易牺牲某些 patch——但这是跨方法观察，不是受控消融"
+      evidence: "Appendix E 的 MAE ViT-L PCA 特征图没有明显 artifact。……但这是跨方法观察，不是受控消融。"
+      source: ".../04_实验_边界与LAST-ViT.md"
+      confidence: high
+    - to: detr
+      rel_type: DISTINGUISHES
+      detail: "角色区分表：DETR object query 是可学习查询槽位、输出被使用、每个 query 产生一个检测结果；register 不提供图像内容或空间位置、输出不使用、仅供 Transformer 中间存取信息"
+      evidence: "DETR object query | 可学习查询槽位 | 是，每个输出目标预测 | 产生检测结果（与本文 register 的逐项对照表）"
+      source: ".../03_方法_register_token.md"
+      confidence: high
+    - to: last_vit
+      rel_type: INSPIRES
+      detail: "启发后续工作：LAST-ViT 继续追问 Registers 隔离 high-norm 行为后，是否真正解释并消除了背景 patch 承载全局语义的根因——问题定义扩大而非推翻（Registers 的标签监督 ViT 加 register 后 PiB 42.7→41.5，'norm 修好了但前景对齐未修好'）"
+      evidence: "下一篇 LAST-ViT 将继续追问：Registers 虽然隔离了 high-norm 行为，是否真正解释并消除了背景 patch 承载全局语义的根因？"
+      source: "README.md、.../04_实验_边界与LAST-ViT.md"
+      confidence: high
+  belongs_to:
+    - topic: t_vit_line_d
+      order: 6
+      source: "paper-reading-notes/ViT分支阅读路线图.md"

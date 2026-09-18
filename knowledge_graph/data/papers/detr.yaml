@@ -1,0 +1,156 @@
+paper:
+  id: detr
+  title: "End-to-End Object Detection with Transformers"
+  aliases: ["DETR", "DEtection TRansformer"]
+  authors: "Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, Sergey Zagoruyko"
+  affiliation: "Facebook AI Research"
+  year: 2020
+  venue: "ECCV 2020"
+  arxiv: "2005.12872"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/detr-paper/精读笔记"
+  source: "paper-reading-notes/2026/08/detr-paper/精读笔记/01_摘要与引言.md"
+  problem: |
+    现代检测器以"间接"方式处理集合预测任务：在 proposal / anchor / 窗口中心上定义代理回归与分类问题，
+    最终性能被 NMS 后处理、anchor 集合设计与正负样本指派启发式显著绑架；端到端哲学在机器翻译、语音识别
+    已获胜，但在检测上尚未实现——前人要么仍需先验知识、要么不敌 COCO 强基线。核心主张：检测 = 直接集合
+    预测，拆掉 NMS 与 anchor，把去重约束前置进训练损失。（01_摘要与引言.md）
+  contributions:
+    - "集合式全局损失：匈牙利二分图匹配强制预测唯一 + 逐目标匈牙利损失；∅ 类 log 项降权 10 倍应对类别不平衡，类比 Faster R-CNN 正负样本子采样（.../02_方法_集合损失与架构拆解.md）"
+    - "架构三件套：CNN backbone（ResNet C5）+ 标准 Transformer encoder-decoder（6+6 层）+ 3 层 FFN 预测头；训练代码几百行、推理代码不到 50 行 PyTorch，无需专用检测库（.../02_方法_集合损失与架构拆解.md）"
+    - "object queries：N=100 个可学习嵌入，论文界定为 learnt positional encodings；置换不变性要求其互不相同，每层注意力输入都加（.../02_方法_集合损失与架构拆解.md）"
+    - "非自回归并行解码：匹配损失对预测排列不变 → N 个输出无顺序依赖可并行生成，是与翻译版 Transformer 的唯一结构差异（.../01_摘要与引言.md、.../02_方法_集合损失与架构拆解.md）"
+    - "辅助解码损失：每层 decoder 后接共享 FFN + 匈牙利损失（FFN 前加共享 layer-norm），专治'目标数量不对'、缓解收敛慢（.../02_方法_集合损失与架构拆解.md）"
+    - "全景分割统一拓展：decoder 输出上加 mask head（decoder 嵌入对 encoder 输出做多头脑力 → FPN 式上采样至 stride 4，DICE+Focal 监督），stuff/thing 统一处理，逐像素 argmax 天然无重叠、免 mask 对齐启发式（.../04_拓展与结论.md）"
+  limitations:
+    - "收敛极慢：需 500 epoch（约为 Faster R-CNN 全程的 5 倍时长），300→500 epoch 仅 +1.5 AP（.../03_实验与消融.md）"
+    - "小目标性能落后：APS 20.5 vs 26.6（-5.5）；AP75 44.2 vs 45.5 略输——框精细定位不如迭代多年的 anchor Δ 回归（.../03_实验与消融.md）"
+    - "结论自列三大挑战：训练（超长日程）、优化、小目标性能——'现有检测器曾耗费数年改进来应对类似问题'，该痛点清单后来被 Deformable DETR / DAB-DETR / DINO-DETR 逐一攻克（.../04_拓展与结论.md）"
+    - "N 的可用容量小于名义容量：实例数压力测试中 ≤50 全检出，100 个目标时平均只检出约 30 个（分布外反直觉行为）（.../04_拓展与结论.md）"
+    - "全景分割 things 的 mask AP 落后基线约 8 分（受限于 stride-4 上采样的边界精度），靠检测识别质量把 PQth 补回来（.../04_拓展与结论.md）"
+  key_results:
+    - "COCO val 42.0 AP，与武装后的加强版 Faster R-CNN-FPN+（42.0）打平；APL 61.1（+7.8）/ APS 20.5（-5.5）；86 GFLOPs、28 FPS vs 对手 180 GFLOPs、26 FPS（.../03_实验与消融.md）"
+    - "全景分割 COCO val PQ 45.1（DETR-R101）登顶 > PanopticFPN++ 44.1 > UPSNet-M 43.0；stuff 最强（PQst 37.0 vs 33.6）；test set 46 PQ（.../04_拓展与结论.md）"
+    - "推理代码 36 行 PyTorch（<50 行），全部由标准组件构成，无需专用检测库（.../02_方法_集合损失与架构拆解.md、.../04_拓展与结论.md）"
+    - "NMS 探针实验：第 1 层 decoder NMS 有增益、最后几层 NMS 反而误伤真例——去重能力随 decoder 深度逐层学出；1→6 层共 +8.2 AP / +9.5 AP50（.../03_实验与消融.md）"
+    - "encoder 0→6 层 AP 36.7→40.6（大目标 +6.0），encoder 职责是全局推理、分离实例；6→12 层收益递减（.../03_实验与消融.md）"
+    - "损失消融：GIoU 单用 39.9（主力，尺度不变）、ℓ1 单用 35.8（APS 崩至 13.7）、组合 40.6（.../03_实验与消融.md）"
+    - "位置编码消融：完全去掉空间编码仍 32.8 AP（-7.8）；object queries 不可删；逐层注入优于输入注入一次（-1.4）；encoder 对空间编码依赖弱（-1.3）、decoder 强依赖（.../03_实验与消融.md）"
+    - "长颈鹿合成图 24 只全检出（训练集无 >13 只长颈鹿的图）——槽位与类别无强耦合；FFN 全删 -2.3 AP，是性能主力（.../03_实验与消融.md）"
+    - "训练技巧：随机裁剪 +1 AP；推理时 ∅ 槽位用次高类覆盖 +2 AP；500 epoch 长日程比短日程 +1.5 AP（.../03_实验与消融.md）"
+  concepts:
+    - id: object_queries
+      name: "Object Queries"
+      detail: "N=100 个可学习嵌入，论文界定为 learnt positional encodings；置换不变性要求其互不相同；训练后学出区域与尺寸偏好（槽位特化），但与类别无强耦合"
+      origin: "本文"
+      source: ".../02_方法_集合损失与架构拆解.md、.../03_实验与消融.md"
+    - id: hungarian_set_loss
+      name: "匈牙利二分图匹配集合损失"
+      detail: "先匹配后算损失：匈牙利算法求最优指派（匹配代价 = -p̂ + L_box，∅ 代价为常数），再按配对算匈牙利损失（-log p̂ + L_box）；匹配用概率、损失用对数概率；框损失 λ_iou·GIoU + λ_L1·ℓ1，直接回归绝对框"
+      origin: "本文（匈牙利算法沿袭前人 [43]）"
+      source: ".../02_方法_集合损失与架构拆解.md"
+    - id: parallel_decoding
+      name: "非自回归并行解码"
+      detail: "集合无序、匹配损失排列不变 → N 个输出无顺序依赖，每层 decoder 并行解码 N 个目标；与翻译版 Transformer 的唯一结构差异"
+      origin: "本文"
+      source: ".../01_摘要与引言.md、.../02_方法_集合损失与架构拆解.md"
+    - id: auxiliary_decoding_loss
+      name: "每层 Decoder 辅助损失"
+      detail: "每个 decoder 层后接共享参数 FFN + 匈牙利损失（FFN 前加共享 layer-norm），深层监督专治'每类目标数量不对'，也让各层可单独评估"
+      origin: "本文"
+      source: ".../02_方法_集合损失与架构拆解.md"
+    - id: panoptic_mask_head
+      name: "全景分割 Mask Head"
+      detail: "decoder 目标嵌入对 encoder 输出做多头脑力得热图 → FPN 式上采样至 stride 4，DICE+Focal 监督；stuff 也套框（匈牙利匹配依赖框距离）；逐像素 argmax 保证 mask 无重叠"
+      origin: "本文（拓展模式类比 Mask R-CNN 之于 Faster R-CNN）"
+      source: ".../04_拓展与结论.md"
+  depends:
+    - id: transformer
+      name: "Transformer encoder-decoder"
+      detail: "采用基于 Transformer [47] 的编码器-解码器架构；自注意力显式建模所有两两交互，天然适合集合预测的去重约束"
+      origin: "Transformer（Vaswani et al.）"
+      source: ".../01_摘要与引言.md、.../02_方法_集合损失与架构拆解.md"
+    - id: hungarian_algorithm
+      name: "匈牙利算法"
+      detail: "二分图最优指派多项式时间解法（O(N³)），沿袭前人直接集合预测工作（如 [43]）；只在前向外当'裁判'，不参与梯度、推理时不需要"
+      origin: "前人集合预测工作（[43]）"
+      source: ".../02_方法_集合损失与架构拆解.md"
+    - id: giou_loss
+      name: "广义 IoU 损失（GIoU）"
+      detail: "尺度不变的广义 IoU 损失 [38] 与 ℓ1 线性组合构成框损失（λ_L1=5、λ_iou=2），弥补 ℓ1 对大小框尺度失衡；GIoU 是框损失主力"
+      origin: "GIoU [38]"
+      source: ".../02_方法_集合损失与架构拆解.md、.../03_实验与消融.md"
+    - id: resnet
+      name: "ImageNet 预训练 ResNet-50/101 骨干网"
+      detail: "取最后一阶段特征（stride 32，C=2048），1×1 conv 降到 d=256；BN 冻结、学习率低一个量级（1e-5）"
+      origin: "ResNet"
+      source: ".../02_方法_集合损失与架构拆解.md、.../03_实验与消融.md"
+    - id: adamw
+      name: "AdamW"
+      detail: "优化器，weight decay 1e-4；Transformer lr 1e-4、backbone 1e-5，梯度裁剪 0.1"
+      origin: "AdamW [26]"
+      source: ".../03_实验与消融.md、.../04_拓展与结论.md"
+    - id: dice_focal_loss
+      name: "DICE + Focal 损失"
+      detail: "全景分割 mask head 中每个 mask 用 DICE/F-1 损失 [28] 与 Focal 损失 [23] 独立监督，匹配前景/背景极度不平衡"
+      origin: "DICE [28]、Focal [23]"
+      source: ".../04_拓展与结论.md"
+  datasets:
+    - name: "COCO"
+      role: "detection + panoptic segmentation eval"
+      metrics: "42.0 AP（DETR，val）；APL 61.1 / APS 20.5；全景 PQ 45.1（DETR-R101，val）/ 46 PQ（test）"
+      source: ".../03_实验与消融.md、.../04_拓展与结论.md"
+    - name: "ImageNet"
+      role: "backbone pretrain（torchvision 预训练 ResNet，冻结 BN）"
+      source: ".../03_实验与消融.md"
+  problems:
+    - id: detection_surrogate_pipeline
+      description: "现代检测器以间接方式处理集合预测：性能受 NMS 后处理、anchor 集合设计与目标-指派启发式显著影响，每个手工组件都是调参旋钮与误差来源（.../01_摘要与引言.md）"
+      source: ".../01_摘要与引言.md"
+    - id: endtoend_detection_gap
+      description: "端到端哲学在目标检测上尚未实现：此前尝试要么仍添加其他形式先验知识，要么未能在有挑战性的基准上与强基线竞争（.../01_摘要与引言.md）"
+      source: ".../01_摘要与引言.md"
+    - id: panoptic_heuristic_fusion
+      description: "旧全景分割方法区别对待 thing（实例分割分支）与 stuff（语义分割分支）两套输出，再用启发式规则对齐拼接（.../04_拓展与结论.md）"
+      source: ".../04_拓展与结论.md"
+  relates:
+    - to: transformer
+      rel_type: INHERITS
+      detail: "encoder-decoder 架构直接沿用 [47]；唯一结构差异是非自回归并行解码；另有一处实用改造——位置编码逐层注意力注入优于只加一次"
+      evidence: "our model decodes the N objects in parallel at each decoder layer, while Vaswani et al. [47] use an autoregressive model that predicts the output sequence one element at a time"
+      source: ".../02_方法_集合损失与架构拆解.md"
+      confidence: high
+    - to: faster_rcnn
+      rel_type: CONTRAST
+      detail: "武装对手公平对决：给 Faster R-CNN 加 GIoU + 同款随机裁剪 + 9x 长日程调成加强版（40.2→42.0 AP），DETR 42.0 vs 42.0 打平；APL +7.8 / APS -5.5 胜负交换；算力约一半（86 vs 180 GFLOPs）"
+      evidence: "DETR demonstrates accuracy and run-time performance on par with the well-established and highly-optimized Faster R-CNN baseline on the challenging COCO object detection dataset"
+      source: ".../01_摘要与引言.md、.../03_实验与消融.md"
+      confidence: high
+    - to: mask_rcnn
+      rel_type: BORROWS
+      detail: "全景分割拓展模式类比'Mask R-CNN 之于 Faster R-CNN'：在检测器输出上加 mask head；DETR 版差异在以统一方式处理 stuff/thing 的全景分割"
+      evidence: "Similarly to the extension of Faster R-CNN [37] to Mask R-CNN [14], DETR can be naturally extended by adding a mask head on top of the decoder outputs"
+      source: ".../04_拓展与结论.md"
+      confidence: high
+    - to: panopticfpn
+      rel_type: SUPERSEDES
+      detail: "COCO val 全景分割 PQ 45.1（DETR-R101）> PanopticFPN++（R101）44.1；stuff 尤其占优（PQst 37.0 vs 33.6），归因 encoder 全局推理"
+      evidence: "We show that DETR outperforms published results on COCO-val 2017, as well as our strong PanopticFPN baseline"
+      source: ".../04_拓展与结论.md"
+      confidence: high
+    - to: upsnet
+      rel_type: SUPERSEDES
+      detail: "COCO val 全景分割 PQ 45.1 > UPSNet-M 43.0"
+      evidence: "DETR-R101 PQ 45.1 > PanopticFPN++ 44.1 > UPSNet-M 43.0（Table 5）"
+      source: ".../04_拓展与结论.md"
+      confidence: high
+    - to: swin
+      rel_type: CORROBORATES
+      detail: "'Swin 骨干网 + DETR 式设计，即今天检测领域的主流形态'——两篇合起来回答'ViT 怎么当通用骨干网'与'Transformer 怎么把检测任务本身改写掉'"
+      evidence: "Swin 骨干网 + DETR 式设计，即今天检测领域的主流形态。（README 在 ViT 分支中的位置）"
+      source: "README.md"
+      confidence: medium
+  belongs_to:
+    - topic: t_vit_line_b
+      order: 4
+      source: "paper-reading-notes/ViT分支阅读路线图.md"

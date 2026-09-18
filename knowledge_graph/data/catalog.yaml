@@ -1,0 +1,2003 @@
+# 待读/登记论文目录（来源：各阅读路线图与 vmsv2 文献文档）
+# 每条论文：id 用 ascii 小写下划线 slug；status 取值 待读/选读/备查/必读/登记/已读/待查/背景；
+# 已精读的 10 篇（ViT/DeiT/ConvNeXt/Swin/DETR/MAE/Registers/LAST-ViT/RAFT/Transformer）不在本文件，由 papers.yaml 负责。
+# 注意：follows 中的 raft 节点位于 papers.yaml（已精读），不在本文件。
+
+topics:
+  - id: t_vit_branch
+    name: "ViT分支"
+    kind: branch
+    description: "ViT 阅读主线（A-D 共 8 篇已全部精读）；「未来再说」坑（BEiT、SETR 系、ViT-22B 系、CLIP 系）已转入拓展图"
+    source: "paper-reading-notes/ViT分支阅读路线图.md"
+  - id: t_vit_line_a
+    name: "主线A 效率民主化"
+    kind: subline
+    parent: t_vit_branch
+    description: "ViT 主线A：效率民主化（含 8 篇主线论文已全部精读）"
+    source: "paper-reading-notes/ViT分支阅读路线图.md"
+  - id: t_vit_line_b
+    name: "主线B 架构演进"
+    kind: subline
+    parent: t_vit_branch
+    description: "ViT 主线B：架构演进（含 8 篇主线论文已全部精读）"
+    source: "paper-reading-notes/ViT分支阅读路线图.md"
+  - id: t_vit_line_c
+    name: "主线C 自监督"
+    kind: subline
+    parent: t_vit_branch
+    description: "ViT 主线C：自监督（含 8 篇主线论文已全部精读）"
+    source: "paper-reading-notes/ViT分支阅读路线图.md"
+  - id: t_vit_line_d
+    name: "主线D 行为诊断修正"
+    kind: subline
+    parent: t_vit_branch
+    description: "ViT 主线D：行为诊断修正（含 8 篇主线论文已全部精读）"
+    source: "paper-reading-notes/ViT分支阅读路线图.md"
+
+  - id: t_vit_extension
+    name: "ViT家族拓展"
+    kind: branch
+    description: "ViT 家族拓展：五条支线共 36 篇，仅登记不精读"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: t_ext_arch
+    name: "支线一 架构演进续集"
+    kind: subline
+    parent: t_vit_extension
+    description: "Swin V2、ConvNeXt V2 起的架构演进续集与高效变体"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: t_ext_ssl
+    name: "支线二 自监督续集"
+    kind: subline
+    parent: t_vit_extension
+    description: "DINO 起的自监督续集：BEiT 系、I-JEPA、DINOv2/v3、EVA 系"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: t_ext_multimodal
+    name: "支线三 多模态与视觉基础模型"
+    kind: subline
+    parent: t_vit_extension
+    description: "CLIP、SigLIP 起的多模态与视觉基础模型"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: t_ext_scaling
+    name: "支线四 Scaling与训练配方"
+    kind: subline
+    parent: t_vit_extension
+    description: "ViT-22B、DeiT III 与 FlashAttention 系"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: t_ext_challenger
+    name: "支线五 挑战者·非注意力架构"
+    kind: subline
+    parent: t_vit_extension
+    description: "Vim、VMamba 等非注意力架构挑战者"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+
+  - id: t_video_frame
+    name: "视频抽帧压帧分支"
+    kind: branch
+    description: "视频抽帧压帧分支：镜头检测/光流/关键帧摘要/帧插值/神经视频压缩/VLM帧采样等环节（RAFT 已精读）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+
+  - id: t_color_overlap
+    name: "颜色重叠多图复用分支"
+    kind: branch
+    description: "颜色重叠多图复用分支 8 环节链式承接（环节1→8）；独立项目 source of truth 在 chromatic-superposition-vlm；环节7 的 LAST-ViT（CVPR 2026，必读）已精读，由 papers.yaml 负责"
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+
+  - id: t_small_vs_large
+    name: "小模型vs大模型"
+    kind: branch
+    description: "9 篇顶会 + 8 篇背景文献，按站1理论地基→站2蒸馏→站3算力分配→站4评测幻觉→站5剪枝承接"
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+
+  - id: t_llm_branch
+    name: "LLM分支"
+    kind: branch
+    description: "2 篇顶会待读 + 9 篇背景：承接为 Schmidhuber/ARC Prize/AI Scientist/AlphaEvolve→LLMs can't jump→Genie→Si et al."
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+
+  - id: t_classic_foundation
+    name: "经典地基"
+    kind: branch
+    description: "NLP架构/视觉架构/训练配方经典（Transformer 已精读），13 篇顶会/顶刊待查 + 背景"
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+
+  - id: t_vmsv2
+    name: "vmsv2 motion trail 课题"
+    kind: branch
+    description: "课题：视频QA中把运动信息压缩成更少更有结构的视觉证据（motion trail keyframes），主后端 Qwen3-VL-8B；含时间模板/光流双流/动态图/帧采样/视觉标注/工具/评测/gate 技术/LoRA-PEFT 工具层"
+    source: "vmsv2/docs/literature-map.md"
+
+  - id: t_optical_flow_family
+    name: "光流家族"
+    kind: family
+    description: "跨路线的光流方法族：FlowNet→PWC-Net→RAFT→FlowFormer→CoTracker 及 gate 技术中的点轨迹/光流方法"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: t_ssl_family
+    name: "自监督家族"
+    kind: family
+    description: "跨路线的自监督/视觉自监督流派：DINO 系、BEiT 系、I-JEPA、EVA 系等"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: t_distill_family
+    name: "蒸馏压缩家族"
+    kind: family
+    description: "知识蒸馏与小模型压缩流派：Hinton蒸馏、Born-Again、DistilBERT、MiniLM"
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: t_scalinglaw_family
+    name: "Scaling律家族"
+    kind: family
+    description: "Scaling laws 与算力分配流派：Kaplan Scaling Laws、Chinchilla、Beyond Chinchilla-Optimal 等"
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+
+papers:
+  # ===== ViT分支「未来再说」坑登记（主线 A-D 8 篇已精读，不入本文件） =====
+  - id: setr
+    title: "SETR"
+    aliases: ["SETR 系"]
+    status: "登记"
+    note: "「未来再说」坑条目：SETR 系，已转入拓展图"
+    belongs_to:
+      - topic: t_vit_branch
+    source: "paper-reading-notes/ViT分支阅读路线图.md"
+
+  # ===== ViT家族拓展 支线一 架构演进续集 =====
+  - id: swin_v2
+    title: "Swin V2"
+    year: 2022
+    venue: "CVPR 2022"
+    status: "必读"
+    note: "架构演进续集起点"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 1
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: convnext_v2
+    title: "ConvNeXt V2"
+    year: 2023
+    venue: "CVPR 2023"
+    status: "必读"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 2
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: hiera
+    title: "Hiera"
+    year: 2023
+    venue: "ICML 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 3
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: fastvit
+    title: "FastViT"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 4
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: flexivit
+    title: "FlexiViT"
+    year: 2023
+    venue: "CVPR 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 5
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: navit
+    title: "NaViT"
+    year: 2023
+    venue: "arXiv 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 6
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: tome
+    title: "ToMe"
+    year: 2023
+    venue: "ICLR 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 7
+      - topic: t_color_overlap
+        order: 5
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: mobilevit
+    title: "MobileViT"
+    year: 2022
+    venue: "ICLR 2022"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 8
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: mobilevit_v2
+    title: "MobileViTv2"
+    year: 2023
+    venue: "ICLR 2023"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 9
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: edgenext
+    title: "EdgeNeXt"
+    year: 2022
+    venue: "ECCV 2022"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 10
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: efficientvit_mit
+    title: "EfficientViT (MIT版)"
+    year: 2023
+    venue: "CVPR 2023"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 11
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: efficientvit_msra
+    title: "EfficientViT (MSRA版)"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_arch
+        order: 12
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+
+  # ===== ViT家族拓展 支线二 自监督续集 =====
+  - id: dino
+    title: "DINO"
+    year: 2021
+    venue: "ICCV 2021"
+    status: "必读"
+    note: "自监督续集起点，DINOv2/v3 之前必读"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 1
+      - topic: t_ssl_family
+        order: 1
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: beit
+    title: "BEiT"
+    year: 2022
+    venue: "ICLR 2022"
+    status: "选读"
+    aliases: ["BEiT 系"]
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 2
+      - topic: t_ssl_family
+        order: 2
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: ibot
+    title: "iBOT"
+    year: 2022
+    venue: "ICLR 2022"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 3
+      - topic: t_ssl_family
+        order: 3
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: beit_v2
+    title: "BEiT v2"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 4
+      - topic: t_ssl_family
+        order: 4
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: beit_3
+    title: "BEiT-3"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 5
+      - topic: t_ssl_family
+        order: 5
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: i_jepa
+    title: "I-JEPA"
+    year: 2023
+    venue: "CVPR 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 6
+      - topic: t_ssl_family
+        order: 6
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: dinov2
+    title: "DINOv2"
+    year: 2023
+    venue: "arXiv 2023"
+    status: "必读"
+    note: "自监督续集，DINO 之后"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 7
+      - topic: t_ssl_family
+        order: 7
+      - topic: t_vmsv2
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: dinov3
+    title: "DINOv3"
+    year: 2025
+    venue: "arXiv 2025"
+    status: "必读"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 8
+      - topic: t_ssl_family
+        order: 8
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: eva
+    title: "EVA"
+    year: 2023
+    venue: "CVPR 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 9
+      - topic: t_ssl_family
+        order: 9
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: eva_02
+    title: "EVA-02"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_ssl
+        order: 10
+      - topic: t_ssl_family
+        order: 10
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+
+  # ===== ViT家族拓展 支线三 多模态与视觉基础模型 =====
+  - id: clip
+    title: "CLIP"
+    year: 2021
+    venue: "ICML 2021"
+    status: "必读"
+    aliases: ["CLIP 系"]
+    belongs_to:
+      - topic: t_ext_multimodal
+        order: 1
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: siglip
+    title: "SigLIP"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_multimodal
+        order: 2
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: siglip_2
+    title: "SigLIP 2"
+    year: 2025
+    venue: "arXiv 2025"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_multimodal
+        order: 3
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: aim
+    title: "AIM"
+    year: 2022
+    venue: "ECCV 2022"
+    status: "备查"
+    note: "arXiv号待核对"
+    belongs_to:
+      - topic: t_ext_multimodal
+        order: 4
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: aimv2
+    title: "AIMv2"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_multimodal
+        order: 5
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: internvl
+    title: "InternVL"
+    year: 2024
+    venue: "CVPR 2024"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_multimodal
+        order: 6
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: sam
+    title: "SAM"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_multimodal
+        order: 7
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+
+  # ===== ViT家族拓展 支线四 Scaling与训练配方 =====
+  - id: vit_22b
+    title: "ViT-22B"
+    year: 2023
+    venue: "ICML 2023"
+    status: "选读"
+    aliases: ["ViT-22B 系"]
+    belongs_to:
+      - topic: t_ext_scaling
+        order: 1
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: deit_3
+    title: "DeiT III"
+    year: 2022
+    venue: "NeurIPS 2022"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_scaling
+        order: 2
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: flashattention
+    title: "FlashAttention"
+    year: 2022
+    venue: "NeurIPS 2022"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_scaling
+        order: 3
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: flashattention_2
+    title: "FlashAttention-2"
+    year: 2024
+    venue: "ICLR 2024"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_scaling
+        order: 4
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: flashattention_3
+    title: "FlashAttention-3"
+    year: 2024
+    venue: "NeurIPS 2024"
+    status: "备查"
+    belongs_to:
+      - topic: t_ext_scaling
+        order: 5
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+
+  # ===== ViT家族拓展 支线五 挑战者·非注意力架构 =====
+  - id: vim
+    title: "Vim"
+    year: 2024
+    venue: "ICML 2024"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_challenger
+        order: 1
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - id: vmamba
+    title: "VMamba"
+    year: 2024
+    venue: "NeurIPS 2024"
+    status: "选读"
+    belongs_to:
+      - topic: t_ext_challenger
+        order: 2
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+
+  # ===== 视频抽帧压帧分支 =====
+  - id: transnet_v2
+    title: "TransNetV2"
+    year: 2020
+    venue: "arXiv 2020"
+    status: "待读"
+    note: "环节①镜头检测"
+    belongs_to:
+      - topic: t_video_frame
+        order: 1
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: horn_schunck
+    title: "Horn-Schunck"
+    year: 1981
+    venue: "AI 1981"
+    status: "选读"
+    note: "环节②光流"
+    belongs_to:
+      - topic: t_video_frame
+        order: 2
+      - topic: t_optical_flow_family
+        order: 1
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: flownet
+    title: "FlowNet"
+    year: 2015
+    venue: "ICCV 2015"
+    status: "待读"
+    note: "环节②光流；一作 Dosovitskiy（与 ViT 一作相同）"
+    belongs_to:
+      - topic: t_video_frame
+        order: 3
+      - topic: t_optical_flow_family
+        order: 2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: pwc_net
+    title: "PWC-Net"
+    year: 2018
+    venue: "CVPR 2018"
+    status: "待读"
+    note: "环节②光流"
+    belongs_to:
+      - topic: t_video_frame
+        order: 4
+      - topic: t_optical_flow_family
+        order: 3
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: flowformer
+    title: "FlowFormer"
+    year: 2022
+    venue: "ECCV 2022"
+    status: "待读"
+    note: "环节②光流"
+    belongs_to:
+      - topic: t_video_frame
+        order: 5
+      - topic: t_optical_flow_family
+        order: 5
+      - topic: t_vmsv2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: cotracker
+    title: "CoTracker"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "待读"
+    note: "环节②光流；vmsv2 gate 技术 P0 点轨迹"
+    belongs_to:
+      - topic: t_video_frame
+        order: 6
+      - topic: t_optical_flow_family
+        order: 6
+      - topic: t_vmsv2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: tvsum
+    title: "TVSum"
+    year: 2015
+    venue: "CVPR 2015"
+    status: "待读"
+    note: "环节④关键帧/视频摘要"
+    belongs_to:
+      - topic: t_video_frame
+        order: 7
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: summe
+    title: "SumMe"
+    year: 2014
+    venue: "ECCV 2014"
+    status: "待读"
+    note: "环节④关键帧/视频摘要"
+    belongs_to:
+      - topic: t_video_frame
+        order: 8
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: kts
+    title: "KTS"
+    year: 2014
+    venue: "ECCV 2014"
+    status: "待读"
+    note: "环节④关键帧/视频摘要"
+    belongs_to:
+      - topic: t_video_frame
+        order: 9
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: dr_dsn
+    title: "DR-DSN"
+    year: 2017
+    venue: "CVPR 2017"
+    status: "待读"
+    note: "环节④关键帧/视频摘要"
+    belongs_to:
+      - topic: t_video_frame
+        order: 10
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: sumgraph
+    title: "SumGraph"
+    year: 2021
+    venue: "AAAI 2021"
+    status: "待读"
+    note: "环节④关键帧/视频摘要"
+    belongs_to:
+      - topic: t_video_frame
+        order: 11
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: videoagent
+    title: "VideoAgent"
+    year: 2024
+    venue: "ECCV 2024"
+    status: "待读"
+    note: "环节④关键帧/视频摘要；vmsv2 帧采样/视频MLLM 组"
+    belongs_to:
+      - topic: t_video_frame
+        order: 12
+      - topic: t_vmsv2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: rife
+    title: "RIFE"
+    year: 2022
+    venue: "CVPR 2022"
+    status: "选读"
+    note: "环节⑤帧插值"
+    belongs_to:
+      - topic: t_video_frame
+        order: 13
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: film
+    title: "FILM"
+    year: 2022
+    venue: "ECCV 2022"
+    status: "选读"
+    note: "环节⑤帧插值"
+    belongs_to:
+      - topic: t_video_frame
+        order: 14
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: h264_hevc_vvc_survey
+    title: "H.264/HEVC/VVC 综述"
+    venue: "TCSVT"
+    status: "选读"
+    note: "环节⑥神经视频压缩"
+    belongs_to:
+      - topic: t_video_frame
+        order: 15
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: hyperprior
+    title: "Hyperprior"
+    year: 2018
+    venue: "ICLR 2018"
+    status: "待读"
+    note: "环节⑥神经视频压缩"
+    belongs_to:
+      - topic: t_video_frame
+        order: 16
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: dcvc
+    title: "DCVC 系列"
+    venue: "ICCV 2023 起"
+    status: "待读"
+    note: "环节⑥神经视频压缩"
+    belongs_to:
+      - topic: t_video_frame
+        order: 17
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: videollm_online
+    title: "VideoLLM-online"
+    year: 2024
+    venue: "CVPR 2024"
+    status: "待读"
+    note: "环节⑦VLM帧采样"
+    belongs_to:
+      - topic: t_video_frame
+        order: 18
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: longvu
+    title: "LongVU"
+    year: 2024
+    venue: "ICML 2025"
+    status: "待读"
+    note: "环节⑦VLM帧采样；颜色分支环节8 P1；vmsv2 帧采样/视频MLLM 组。venue 记载不一致：longvu-analysis.md 记 ICLR 2025，2026-09-17 联网核查为 ICML 2025"
+    belongs_to:
+      - topic: t_video_frame
+        order: 19
+      - topic: t_color_overlap
+        order: 4
+      - topic: t_vmsv2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: video_mme
+    title: "Video-MME"
+    year: 2025
+    venue: "CVPR 2025"
+    status: "待读"
+    note: "环节⑦VLM帧采样；vmsv2 评测组"
+    belongs_to:
+      - topic: t_video_frame
+        order: 20
+      - topic: t_vmsv2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: longvideobench
+    title: "LongVideoBench"
+    year: 2024
+    venue: "NeurIPS 2024"
+    status: "待读"
+    note: "环节⑦VLM帧采样"
+    belongs_to:
+      - topic: t_video_frame
+        order: 21
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: sam_2
+    title: "SAM 2"
+    status: "登记"
+    note: "视频分支暂缓登记；vmsv2 工具组与 gate 技术 P2 分割（报告记 2023/2024）"
+    belongs_to:
+      - topic: t_video_frame
+      - topic: t_vmsv2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: slowfast
+    title: "SlowFast"
+    year: 2019
+    venue: "ICCV 2019"
+    status: "登记"
+    note: "视频分支暂缓登记「SlowFast 系」；vmsv2 光流/双流组"
+    belongs_to:
+      - topic: t_video_frame
+      - topic: t_vmsv2
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - id: perceptual_hash_dedup
+    title: "感知哈希去重"
+    status: "登记"
+    note: "视频分支暂缓登记（方法条目，非单篇论文）"
+    belongs_to:
+      - topic: t_video_frame
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+
+  # ===== 颜色重叠多图复用分支（环节1→8 链式承接；环节7 LAST-ViT 已精读不入） =====
+  # 环节1 合成与抠图
+  - id: porter_duff
+    title: "Porter-Duff"
+    year: 1984
+    venue: "SIGGRAPH 1984"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 1
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: w3c_compositing
+    title: "W3C Compositing Level 1"
+    venue: "规范"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: blue_screen_matting
+    title: "Blue Screen Matting"
+    year: 1996
+    venue: "SIGGRAPH 1996"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 3
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: environment_matting
+    title: "Environment Matting"
+    year: 1999
+    venue: "SIGGRAPH 1999"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 4
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: inverse_compositing
+    title: "Inverse Compositing"
+    year: 2021
+    venue: "WACV 2021"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 5
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  # 环节2 反射分离/分解
+  - id: reflection_separation
+    title: "Reflection Separation"
+    year: 2018
+    venue: "CVPR 2018"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 6
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: double_dip
+    title: "Double-DIP"
+    year: 2019
+    venue: "CVPR 2019"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 7
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: deep_adversarial_decomposition
+    title: "Deep Adversarial Decomposition"
+    year: 2020
+    venue: "CVPR 2020"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 8
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: bid
+    title: "BID"
+    year: 2023
+    venue: "CVPR 2023"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 9
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: component_synergy
+    title: "Component Synergy"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 10
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  # 环节3 编码曝光与SCI
+  - id: compressed_sensing
+    title: "Compressed Sensing"
+    year: 2006
+    venue: "IEEE TIT 2006"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 11
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: flutter_shutter
+    title: "Flutter Shutter"
+    year: 2006
+    venue: "SIGGRAPH 2006"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 12
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: coded_exposure_video
+    title: "Coded Exposure Video"
+    year: 2011
+    venue: "ICCV 2011"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 13
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: plenoptic_multiplexing
+    title: "Plenoptic Multiplexing"
+    venue: "CVPR/IJCV"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 14
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: cacti
+    title: "CACTI"
+    year: 2013
+    venue: "Optics Express 2013"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 15
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: time_multiplexed_coded_aperture
+    title: "Time-Multiplexed Coded Aperture"
+    year: 2021
+    venue: "ICCV 2021"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 16
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: pnp_sci
+    title: "PnP-SCI"
+    year: 2020
+    venue: "CVPR 2020"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 17
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: deep_optics_video_sci
+    title: "Deep Optics Video SCI"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 18
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  # 环节4 neural image hiding
+  - id: hiding_images_plain_sight
+    title: "Hiding Images in Plain Sight"
+    year: 2017
+    venue: "NeurIPS 2017"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 19
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: inn_steganography
+    title: "INN Steganography"
+    year: 2021
+    venue: "CVPR 2021"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 20
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: hinet
+    title: "HiNet"
+    year: 2021
+    venue: "ICCV 2021"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 21
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: deepmih
+    title: "DeepMIH"
+    venue: "TPAMI"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 22
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: invmihnet
+    title: "InvMIHNet"
+    year: 2024
+    venue: "ICASSP 2024"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 23
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  # 环节5 时间模板/动态图
+  - id: temporal_templates
+    title: "Temporal Templates (MHI)"
+    year: 2001
+    venue: "TPAMI 2001"
+    status: "待读"
+    note: "Bobick & Davis；vmsv2 时间模板组同篇"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 24
+      - topic: t_vmsv2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: dynamic_image_networks
+    title: "Dynamic Image Networks"
+    year: 2016
+    venue: "CVPR 2016"
+    status: "待读"
+    note: "颜色分支环节5 与环节8（P1）、vmsv2 动态图组同篇"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 25
+      - topic: t_color_overlap
+        order: 28
+      - topic: t_vmsv2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: potion
+    title: "PoTion"
+    year: 2018
+    venue: "CVPR 2018"
+    status: "待读"
+    note: "vmsv2 动态图组同篇"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 26
+      - topic: t_vmsv2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: sifar
+    title: "SIFAR"
+    year: 2022
+    venue: "ICLR 2022"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 27
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: tall
+    title: "TALL"
+    year: 2023
+    venue: "ICCV 2023"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 28
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  # 环节6 token选择与高效多模态
+  - id: tokenlearner
+    title: "TokenLearner"
+    year: 2021
+    venue: "NeurIPS 2021"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 29
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: dynamicvit
+    title: "DynamicViT"
+    year: 2021
+    venue: "NeurIPS 2021"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 30
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: evit
+    title: "EViT"
+    year: 2022
+    venue: "ICLR 2022"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 31
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: a_vit
+    title: "A-ViT"
+    year: 2022
+    venue: "CVPR 2022"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 32
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: flamingo
+    title: "Flamingo"
+    year: 2022
+    venue: "NeurIPS 2022"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 33
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: blip_2
+    title: "BLIP-2"
+    year: 2023
+    venue: "ICML 2023"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 34
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: instructblip
+    title: "InstructBLIP"
+    year: 2023
+    venue: "NeurIPS 2023"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 35
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: mantis
+    title: "Mantis"
+    year: 2024
+    venue: "TMLR 2024"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 36
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: honeybee
+    title: "Honeybee"
+    year: 2024
+    venue: "CVPR 2024"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 37
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: llama_vid
+    title: "LLaMA-VID"
+    year: 2024
+    venue: "ECCV 2024"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 38
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: fastv
+    title: "FastV"
+    year: 2024
+    venue: "ECCV 2024"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 39
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: mqt
+    title: "MQT"
+    year: 2024
+    venue: "NeurIPS 2024"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 40
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: tokenpacker
+    title: "TokenPacker"
+    year: 2025
+    venue: "IJCV 2025"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 41
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: visionzip
+    title: "VisionZip"
+    year: 2025
+    venue: "CVPR 2025"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 42
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: pvc
+    title: "PVC"
+    year: 2025
+    venue: "CVPR 2025"
+    status: "待读"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 43
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  # 环节8 VLM直接读复合图（环节7 的 LAST-ViT 已精读，见 papers.yaml）
+  - id: box_tuning
+    title: "BoxTuning"
+    year: 2026
+    venue: "arXiv 2604.11136"
+    status: "待读"
+    note: "P0；vmsv2 视觉标注组同篇"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 44
+      - topic: t_vmsv2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: dyn_img
+    title: "DynImg"
+    year: 2025
+    venue: "ICCV 2025"
+    status: "待读"
+    note: "P0；vmsv2 帧采样/视频MLLM 组同篇"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 45
+      - topic: t_vmsv2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: motion_sight
+    title: "MotionSight"
+    year: 2026
+    venue: "ICLR 2026 Poster"
+    status: "待读"
+    note: "P1；vmsv2 视觉标注组同篇（报告另记 2025/2026）"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 46
+      - topic: t_vmsv2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: set_of_mark
+    title: "Set-of-Mark"
+    year: 2023
+    venue: "arXiv 2023"
+    status: "待读"
+    note: "P2；vmsv2 视觉标注组同篇"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 47
+      - topic: t_vmsv2
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+  - id: invisible_injections
+    title: "Invisible Injections"
+    venue: "arXiv"
+    status: "待读"
+    note: "P2"
+    belongs_to:
+      - topic: t_color_overlap
+        order: 48
+    source: "paper-reading-notes/颜色重叠多图复用分支阅读路线图.md"
+
+  # ===== 小模型vs大模型（站1→站2→站3→站4→站5） =====
+  - id: deep_double_descent
+    title: "Deep Double Descent"
+    year: 2020
+    venue: "ICLR 2020"
+    status: "待读"
+    note: "Nakkiran；站1理论地基"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 1
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: belkin_bias_variance
+    title: "Reconciling ML practice and bias-variance"
+    year: 2019
+    venue: "PNAS 2019"
+    status: "待读"
+    note: "Belkin；站1理论地基"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 2
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: born_again
+    title: "Born-Again Neural Networks"
+    year: 2018
+    venue: "ICML 2018"
+    status: "待读"
+    note: "站2蒸馏"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 3
+      - topic: t_distill_family
+        order: 2
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: minilm
+    title: "MiniLM"
+    year: 2020
+    venue: "NeurIPS 2020"
+    status: "待读"
+    note: "站2蒸馏"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 4
+      - topic: t_distill_family
+        order: 3
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: beyond_chinchilla
+    title: "Beyond Chinchilla-Optimal"
+    year: 2024
+    venue: "ICML 2024"
+    status: "待读"
+    note: "站3算力分配"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 5
+      - topic: t_scalinglaw_family
+        order: 3
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: scaling_data_constrained
+    title: "Scaling Data-Constrained LMs"
+    year: 2023
+    venue: "NeurIPS 2023"
+    status: "待读"
+    note: "站3算力分配"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 6
+      - topic: t_scalinglaw_family
+        order: 4
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: gsm_symbolic
+    title: "GSM-Symbolic"
+    year: 2025
+    venue: "ICLR 2025"
+    status: "待读"
+    note: "站4评测幻觉"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 7
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: lottery_ticket
+    title: "Lottery Ticket Hypothesis"
+    year: 2019
+    venue: "ICLR 2019"
+    status: "待读"
+    note: "ICLR 2019 最佳论文；站5剪枝"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 8
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: rewinding_finetuning
+    title: "Comparing Rewinding and Fine-tuning"
+    year: 2020
+    venue: "ICLR 2020"
+    status: "待读"
+    note: "Renda；站5剪枝"
+    belongs_to:
+      - topic: t_small_vs_large
+        order: 9
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  # 背景8篇
+  - id: kaplan_scaling_laws
+    title: "Kaplan Scaling Laws"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+      - topic: t_scalinglaw_family
+        order: 1
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: hinton_distillation
+    title: "Hinton蒸馏"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+      - topic: t_classic_foundation
+      - topic: t_distill_family
+        order: 1
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: distilbert
+    title: "DistilBERT"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+      - topic: t_distill_family
+        order: 4
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: phi_1
+    title: "Phi-1"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: phi_1_5
+    title: "phi-1.5"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: chinchilla
+    title: "Chinchilla"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+      - topic: t_scalinglaw_family
+        order: 2
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: llama
+    title: "LLaMA"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+  - id: benbench
+    title: "BenBench"
+    status: "背景"
+    belongs_to:
+      - topic: t_small_vs_large
+    source: "paper-reading-notes/小模型vs大模型阅读链路.md"
+
+  # ===== LLM分支 =====
+  - id: llms_cant_jump
+    title: "LLMs can't jump"
+    year: 2026
+    venue: "PhilSci-Archive"
+    status: "背景"
+    note: "正主；Zahavy，DeepMind；立场论文"
+    belongs_to:
+      - topic: t_llm_branch
+        order: 1
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: genie
+    title: "Genie: Generative Interactive Environments"
+    year: 2024
+    venue: "ICML 2024"
+    status: "待读"
+    belongs_to:
+      - topic: t_llm_branch
+        order: 2
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: novel_research_ideas
+    title: "Can LLMs Generate Novel Research Ideas?"
+    year: 2025
+    venue: "ICLR 2025"
+    status: "待读"
+    note: "Si et al."
+    belongs_to:
+      - topic: t_llm_branch
+        order: 3
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  # 背景9篇
+  - id: ai_scientist
+    title: "The AI Scientist"
+    venue: "arXiv"
+    status: "背景"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: alphaevolve
+    title: "AlphaEvolve"
+    venue: "arXiv"
+    status: "背景"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: compression_progress
+    title: "Driven by Compression Progress"
+    status: "背景"
+    note: "Schmidhuber"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: arc_prize_2024
+    title: "ARC Prize 2024 TR"
+    status: "背景"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: world_models
+    title: "World Models"
+    status: "背景"
+    note: "Ha & Schmidhuber"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: symbol_grounding
+    title: "Symbol Grounding Problem"
+    status: "背景"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: peirce_collected_papers
+    title: "Peirce Collected Papers"
+    status: "背景"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - id: book_of_why
+    title: "The Book of Why"
+    status: "背景"
+    belongs_to:
+      - topic: t_llm_branch
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+
+  # ===== 经典地基（Transformer 已精读不入） =====
+  - id: bert
+    title: "BERT"
+    year: 2019
+    venue: "NAACL 2019"
+    status: "待查"
+    note: "NLP架构"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 1
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: gpt3
+    title: "GPT-3"
+    year: 2020
+    venue: "NeurIPS 2020"
+    status: "待查"
+    note: "NLP架构"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 2
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: resnet
+    title: "ResNet"
+    year: 2016
+    venue: "CVPR 2016"
+    status: "待查"
+    note: "视觉架构"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 3
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: faster_rcnn
+    title: "Faster R-CNN"
+    year: 2015
+    venue: "NIPS 2015"
+    status: "待查"
+    note: "视觉架构"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 4
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: mask_rcnn
+    title: "Mask R-CNN"
+    year: 2017
+    venue: "ICCV 2017"
+    status: "待查"
+    note: "视觉架构"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 5
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: fpn
+    title: "FPN"
+    year: 2017
+    venue: "CVPR 2017"
+    status: "待查"
+    note: "视觉架构"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 6
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: retinanet
+    title: "RetinaNet"
+    year: 2017
+    venue: "ICCV 2017"
+    status: "待查"
+    note: "视觉架构"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 7
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: adamw
+    title: "AdamW"
+    year: 2019
+    venue: "ICLR 2019"
+    status: "待查"
+    note: "训练配方"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 8
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: sgdr
+    title: "SGDR"
+    year: 2017
+    venue: "ICLR 2017"
+    status: "待查"
+    note: "训练配方"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 9
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: large_minibatch_sgd
+    title: "Accurate Large Minibatch SGD"
+    year: 2017
+    venue: "ICCV 2017"
+    status: "待查"
+    note: "Goyal；训练配方"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 10
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: rethinking_inception
+    title: "Rethinking Inception"
+    year: 2016
+    venue: "CVPR 2016"
+    status: "待查"
+    note: "Szegedy；训练配方"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 11
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: randaugment
+    title: "RandAugment"
+    year: 2020
+    venue: "NeurIPS 2020"
+    status: "待查"
+    note: "训练配方"
+    belongs_to:
+      - topic: t_classic_foundation
+        order: 12
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  # 背景
+  - id: gpt2
+    title: "GPT-2"
+    status: "背景"
+    belongs_to:
+      - topic: t_classic_foundation
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: mixup
+    title: "mixup"
+    status: "背景"
+    belongs_to:
+      - topic: t_classic_foundation
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+  - id: cutmix
+    title: "CutMix"
+    status: "背景"
+    belongs_to:
+      - topic: t_classic_foundation
+    source: "paper-reading-notes/经典地基阅读路线图.md"
+
+  # ===== vmsv2 文献（课题：视频QA motion trail keyframes，主后端 Qwen3-VL-8B） =====
+  # 光流/双流
+  - id: two_stream
+    title: "Two-Stream ConvNets"
+    year: 2014
+    venue: "NeurIPS 2014"
+    status: "待读"
+    note: "vmsv2 光流/双流组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  # 动态图
+  - id: rank_pooling
+    title: "Rank Pooling"
+    year: 2015
+    venue: "CVPR 2015"
+    status: "待读"
+    note: "Fernando；vmsv2 动态图组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  - id: videodarwin
+    title: "VideoDarwin"
+    year: 2016
+    venue: "CVPR 2016"
+    status: "待读"
+    note: "vmsv2 动态图组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  # 帧采样/视频MLLM
+  - id: video_chatgpt
+    title: "Video-ChatGPT"
+    year: 2023
+    status: "待读"
+    note: "vmsv2 帧采样/视频MLLM 组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  - id: video_llava
+    title: "Video-LLaVA"
+    year: 2023
+    status: "待读"
+    note: "vmsv2 帧采样/视频MLLM 组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  - id: llava_onevision
+    title: "LLaVA-OneVision"
+    year: 2024
+    status: "待读"
+    note: "vmsv2 帧采样/视频MLLM 组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  - id: timechat
+    title: "TimeChat"
+    year: 2024
+    venue: "CVPR 2024"
+    status: "待读"
+    note: "vmsv2 帧采样/视频MLLM 组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  - id: ig_vlm
+    title: "IG-VLM"
+    year: 2024
+    venue: "IEEE Access 2024"
+    status: "待读"
+    note: "IEEE Access 2024 非顶刊；vmsv2 帧采样/视频MLLM 组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  # 视觉标注
+  - id: v_star_seal
+    title: "V*/SEAL"
+    status: "待读"
+    note: "vmsv2 视觉标注组（报告记 2023/2024）"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  # 工具
+  - id: track_anything
+    title: "Track Anything"
+    status: "待读"
+    note: "vmsv2 工具组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  # 评测
+  - id: mvbench
+    title: "MVBench"
+    status: "待读"
+    note: "vmsv2 评测组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  - id: tempcompass
+    title: "TempCompass"
+    status: "待读"
+    note: "vmsv2 评测组"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+  - id: motionbench
+    title: "MotionBench"
+    status: "待读"
+    note: "vmsv2 评测组（报告记 2024/2025）"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/literature-map.md"
+
+  # ----- vmsv2 gate 技术（motion-gate-literature.md） -----
+  - id: cotracker3
+    title: "CoTracker3"
+    status: "待读"
+    note: "gate P0 点轨迹"
+    belongs_to:
+      - topic: t_vmsv2
+      - topic: t_optical_flow_family
+        order: 7
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: tapir
+    title: "TAPIR"
+    status: "待读"
+    note: "gate P0 点轨迹"
+    belongs_to:
+      - topic: t_vmsv2
+      - topic: t_optical_flow_family
+        order: 8
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: pips
+    title: "PIPs"
+    status: "待读"
+    note: "gate P0 点轨迹"
+    belongs_to:
+      - topic: t_vmsv2
+      - topic: t_optical_flow_family
+        order: 9
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: omnimotion
+    title: "OmniMotion"
+    status: "待读"
+    note: "gate P0 点轨迹"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: gmflow
+    title: "GMFlow"
+    status: "待读"
+    note: "gate P1 光流"
+    belongs_to:
+      - topic: t_vmsv2
+      - topic: t_optical_flow_family
+        order: 10
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: sea_raft
+    title: "SEA-RAFT"
+    status: "待读"
+    note: "gate P1 光流"
+    belongs_to:
+      - topic: t_vmsv2
+      - topic: t_optical_flow_family
+        order: 11
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: xmem
+    title: "XMem"
+    status: "待读"
+    note: "gate P2 分割"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: deva
+    title: "DEVA"
+    status: "待读"
+    note: "gate P2 分割"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/motion-gate-literature.md"
+  - id: cutler
+    title: "CutLER"
+    status: "待读"
+    note: "gate P3 objectness"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/motion-gate-literature.md"
+
+  # ----- vmsv2 LoRA/PEFT 工具层（lineage-map） -----
+  - id: adapter
+    title: "Adapter"
+    year: 2019
+    venue: "ICML 2019"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: prefix_tuning
+    title: "Prefix-Tuning"
+    year: 2021
+    venue: "ACL 2021"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: prompt_tuning
+    title: "Prompt Tuning"
+    year: 2021
+    venue: "EMNLP 2021"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: lora
+    title: "LoRA"
+    year: 2022
+    venue: "ICLR 2022"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: vpt
+    title: "VPT"
+    year: 2022
+    venue: "ECCV 2022"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: clip_adapter
+    title: "CLIP-Adapter"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: llama_adapter
+    title: "LLaMA-Adapter"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: qlora
+    title: "QLoRA"
+    year: 2023
+    venue: "NeurIPS 2023"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: dora
+    title: "DoRA"
+    year: 2024
+    venue: "ICML 2024"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: llava
+    title: "LLaVA"
+    year: 2023
+    venue: "NeurIPS 2023"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+  - id: llava_15
+    title: "LLaVA-1.5"
+    year: 2024
+    venue: "CVPR 2024"
+    status: "待读"
+    note: "LoRA/PEFT 工具层"
+    belongs_to:
+      - topic: t_vmsv2
+    source: "vmsv2/docs/lineage-map.md"
+
+# 路线内的承接关系（FOLLOWS = 阅读顺序承接）
+follows:
+  # ViT家族拓展：推荐精读链（核心八篇）
+  - from: swin_v2
+    to: convnext_v2
+    rel_type: FOLLOWS
+    detail: "推荐精读链（核心八篇）"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - from: convnext_v2
+    to: dino
+    rel_type: FOLLOWS
+    detail: "推荐精读链（核心八篇）"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - from: dino
+    to: dinov2
+    rel_type: FOLLOWS
+    detail: "推荐精读链（核心八篇）：自蒸馏源头，理解后两者前必读"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - from: dinov2
+    to: dinov3
+    rel_type: FOLLOWS
+    detail: "推荐精读链（核心八篇）"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - from: dinov3
+    to: clip
+    rel_type: FOLLOWS
+    detail: "推荐精读链（核心八篇）"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - from: clip
+    to: siglip
+    rel_type: FOLLOWS
+    detail: "推荐精读链（核心八篇）"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+  - from: siglip
+    to: vit_22b
+    rel_type: FOLLOWS
+    detail: "推荐精读链（核心八篇）"
+    source: "paper-reading-notes/ViT家族拓展阅读路线图.md"
+
+  # 视频抽帧压帧分支：光流方法演进链（raft 为已精读论文，见 papers.yaml）
+  - from: flownet
+    to: pwc_net
+    rel_type: FOLLOWS
+    detail: "光流方法演进链（FlowNet→PWC-Net→RAFT→FlowFormer→CoTracker）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: pwc_net
+    to: raft
+    rel_type: FOLLOWS
+    detail: "光流方法演进链（RAFT 已精读，节点在 papers.yaml）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: raft
+    to: flowformer
+    rel_type: FOLLOWS
+    detail: "光流方法演进链（RAFT 已精读，节点在 papers.yaml）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: flowformer
+    to: cotracker
+    rel_type: FOLLOWS
+    detail: "光流方法演进链（FlowNet→PWC-Net→RAFT→FlowFormer→CoTracker）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+
+  # 视频抽帧压帧分支：视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）
+  - from: tvsum
+    to: kts
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: summe
+    to: kts
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: kts
+    to: sumgraph
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: kts
+    to: dr_dsn
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: sumgraph
+    to: videoagent
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: sumgraph
+    to: longvu
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: dr_dsn
+    to: videoagent
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+  - from: dr_dsn
+    to: longvu
+    rel_type: FOLLOWS
+    detail: "视频摘要承接（TVSum/SumMe→KTS→SumGraph/DR-DSN→VideoAgent+LongVU）"
+    source: "paper-reading-notes/视频抽帧压帧分支阅读路线图.md"
+
+  # LLM分支承接（Schmidhuber/ARC Prize/AI Scientist/AlphaEvolve→LLMs can't jump→Genie→Si et al.）
+  - from: compression_progress
+    to: llms_cant_jump
+    rel_type: FOLLOWS
+    detail: "LLM分支承接：Schmidhuber（Driven by Compression Progress）→LLMs can't jump"
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - from: arc_prize_2024
+    to: llms_cant_jump
+    rel_type: FOLLOWS
+    detail: "LLM分支承接：ARC Prize→LLMs can't jump"
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - from: ai_scientist
+    to: llms_cant_jump
+    rel_type: FOLLOWS
+    detail: "LLM分支承接：The AI Scientist→LLMs can't jump"
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - from: alphaevolve
+    to: llms_cant_jump
+    rel_type: FOLLOWS
+    detail: "LLM分支承接：AlphaEvolve→LLMs can't jump"
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - from: llms_cant_jump
+    to: genie
+    rel_type: FOLLOWS
+    detail: "LLM分支承接：LLMs can't jump→Genie"
+    source: "paper-reading-notes/LLM分支阅读路线图.md"
+  - from: genie
+    to: novel_research_ideas
+    rel_type: FOLLOWS
+    detail: "LLM分支承接：Genie→Si et al.（Can LLMs Generate Novel Research Ideas?）"
+    source: "paper-reading-notes/LLM分支阅读路线图.md"

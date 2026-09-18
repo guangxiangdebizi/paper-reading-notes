@@ -82,6 +82,19 @@
 - [LLM 分支阅读路线图](./LLM分支阅读路线图.md)：以《LLMs can't jump》（Zahavy, Google DeepMind, 2026）为正主的"LLM 科学发现能力边界"链路——清单只收顶会顶刊（Si et al. ICLR 2025、Genie ICML 2024 两篇），正主与压力测试标本（AI Scientist、AlphaEvolve 等非顶会文献）归入背景文献供查证，附正主身份多渠道核查记录与 venue 复核记录。
 - [经典地基阅读路线图](./经典地基阅读路线图.md)：把 8 篇已精读笔记当作已知前提使用、但从未展开讲解的概念回溯到奠基论文——encoder/decoder 完整架构（Transformer）、decoder 掩码与 [CLS]（BERT）、骨干网基线（ResNet）、RPN/RoI（Faster R-CNN）、focal loss（RetinaNet）、AdamW/cosine/warmup/label smoothing/RandAugment 等，共 13 篇顶会顶刊，只登记、按需查阅，同一篇多次卡点可晋升四站精读。
 
+## 🕸️ 知识图谱（knowledge_graph/）
+
+把已读论文与阅读路线整理成可用 **Cypher** 查询的本地知识图谱（[Kùzu](https://kuzudb.com/) 嵌入式图数据库，无需服务）：论文间关系（继承/改进/续作/反驳/启发/对比等 13 种细分类型）、解决了什么、没解决什么、提出了什么概念、用了哪些数据集、属于哪条路线。每条关系带笔记原句 evidence 与来源文件，忠实笔记、不做二次加工。详见 [knowledge_graph/README.md](./knowledge_graph/README.md)；搭建过程踩坑见 [knowledge_graph/踩坑记录.md](./knowledge_graph/踩坑记录.md)。
+
+```powershell
+# 查询示例（venv 在仓库外层项目目录，含 kuzu + pyyaml）
+..\venv\Scripts\python.exe knowledge_graph\query.py --paper vit    # 单篇全景
+..\venv\Scripts\python.exe knowledge_graph\query.py --demo          # 12 个复习查询
+..\venv\Scripts\python.exe knowledge_graph\query.py "MATCH (a:Paper)-[r:RELATES]->(b:Paper) RETURN a.id, r.rel_type, b.id"
+```
+
+新精读完一篇论文后：按 [data/SCHEMA_SPEC.md](./knowledge_graph/data/SCHEMA_SPEC.md) 写一个 `data/papers/<id>.yaml` 片段 → 重跑 `build_graph.py`（秒级全量重建）即可并入图谱。数据库实体（34MB 二进制）不入库，由 YAML 数据重建。
+
 ---
 
 ## 🔒 其他约定

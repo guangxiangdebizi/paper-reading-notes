@@ -1,0 +1,177 @@
+paper:
+  id: last_vit
+  title: "Vision Transformers Need More Than Registers"
+  aliases: ["LaSt-ViT", "LazyStrike", "LAST-ViT"]
+  authors: "Cheng Shi, Yizhou Yu, Sibei Yang"
+  affiliation: "香港大学计算与数据科学学院 / 中山大学"
+  year: 2026
+  venue: "CVPR 2026"
+  arxiv: "2602.22394"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/last-vit/精读笔记"
+  source: "paper-reading-notes/2026/08/last-vit/精读笔记/README.md"
+  problem: |
+    ViT 中的 artifact 在标签监督、文本监督、自监督三种范式下被广泛观察到（注意力缺失 / 密集对齐失败 / high-norm token），但此前各范式只是分别记录现象、各治一隅，"没有任何单一方法能够全面处理这些现象"，机理未明。本篇做第一性原理考察：先给跨范式的统一定义与度量，再诊断根因。
+  contributions:
+    - "系统分析 ViT 中 artifact 的根因：通过 Patch Score 与 Point-in-Box（PiB）两个统一度量，揭示一种'早期出现且持续存在'的背景主导偏差（01_摘要与引言.md）"
+    - "提出懒惰聚合（lazy aggregation）假设：把粗粒度语义监督与全局依赖同懒惰聚合联系起来——即 ViT 依赖背景 patch 编码全局语义、而非关注真实前景区域的捷径行为（01_摘要与引言.md）"
+    - "提出 LaSt-ViT（LazyStrike）：一种简单的、频率感知的选择性聚合方案，把 CLS token 锚定到前景区域（03_方法_LazyStrike.md）"
+    - "在 12 个 benchmark 上取得一致增益，涵盖目标发现、语义/实例分割与开放词汇检测（04_实验与结论.md）"
+  limitations:
+    - "介入时点限于预训练期：全部实验都是在（重新）训练模型时启用 LazyStrike，对已有预训练模型能否以插件方式事后套用，原文未提供实验（笔记归纳，非原文表述；04_实验与结论.md）"
+    - "K 需按 token 数设定：实证结论是'选约一半 token 最优、全量退化'，该经验规则在可变分辨率、动态 token 数量等设置下的可迁移性原文未讨论（笔记归纳，非原文表述；04_实验与结论.md）"
+    - "收益结构偏向密集任务：下游增益集中于分割、定位、开放词汇等密集预测任务，分类增量较小（Table 8 IN1K 最高 55.8→56.2）（笔记归纳，非原文表述；04_实验与结论.md）"
+  key_results:
+    - "PiB 修复（Table 3）：ViT 42.7→55.1（+12.4）、DINO-v1 44.5→69.7（+25.2，逼近 DINO-ResNet 71.1）、CLIP 39.8→50.1（+10.3）；High Norm 列全部转 ✗（04_实验与结论.md）"
+    - "Table 1 反证：加 register token 消除了 high-norm，但 PiB 不升反降（ViT 42.7→41.5、OpenCLIP-ViT 39.8→37.6）——high-norm token 不是 artifact 的根因（02_分析与假设.md）"
+    - "零样本语义分割（Table 4）：CLIP/MetaCLIP/EVACLIP × B/16 与 L/14 × 6 基准共 36 个增益值全部为正；CLIP L/14 的 VOC20 从 17.1 跃升至 72.4（+55.3）（04_实验与结论.md）"
+    - "开放词汇检测/分割（Table 5）：OV-COCO novel 类 ViT-B +15.8、ViT-L +14.4；OV-LVIS rare 类 +11.3/+6.6；ViT-B 由落后 F-VLM RN50（34.9/17.5 vs 39.6/28.0）到反超（45.7/33.3）（04_实验与结论.md）"
+    - "粗分割涌现（Table 6）：监督 ViT-S/16 从 29.5 升至 41.9（接近 DINO 的 47.7），'LazyStrike prompts emerging properties and those are not exclusive to self-supervised'；DINO 自身 47.7→55.1（04_实验与结论.md）"
+    - "掩码探针（Fig 2b）：移除至 70% 高分 patch 不伤精度（ViT-B/16 甚至 +1.2%），移除低分 patch 则骤降（70% 掩码跌约 60%）（02_分析与假设.md）"
+    - "无监督目标发现（Table 7）：CorLoc 在 VOC07/VOC12/COCO 为 64.4/67.6/51.6，超此前最优 LOST +2.7/+3.6/+0.9，且 55.9 FPS vs LOST 29.4 FPS——避免特征向量计算（04_实验与结论.md）"
+    - "K 消融（Table 8/9）：选一半 token（K=N/2）达峰（IN1K 56.2、VOC 75.9 为全表最高）；K=N 全量退化（分割崩回 Attention-Pool 基线水平、分类几乎不受影响）；Max-Pool 对照排除池化副作用解释（04_实验与结论.md）"
+  concepts:
+    - id: patch_score
+      name: "Patch Score"
+      detail: "patch 特征与 CLS token（全局表示）之间的余弦相似度（Eq.3），评估局部语义一致性、独立于训练范式；ConvNet 用 GAP 特征充当隐式 CLS；只看方向不看范数，使度量对 high-norm 的范数离群性不敏感"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/02_分析与假设.md"
+    - id: pib
+      name: "Point-in-Box (PiB)"
+      detail: "定量评估 artifact 的指标：使用 ImageNet 验证集带单一目标标注的图像，统计 Patch Score 最高的 patch 落在前景标注框内的图像比例；零阈值、零超参"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/02_分析与假设.md"
+    - id: lazy_aggregation
+      name: "Lazy Aggregation（懒惰聚合）"
+      detail: "artifact 的统一根因：ViT 把语义无关的背景 patch 当作表示全局语义的捷径，由两个因素驱动——粗粒度语义监督（制造走捷径的动机）+ 全局注意力（提供前景语义向背景扩散的通道）；背景偏向从训练初期即出现并贯穿全程；两个隔离验证：patch 16→28（背景 token 占比降约 10%，PiB 0.44→0.52、top-1 62%→55%）、窗口注意力逐层替换的剂量-响应（Table 2：PiB 50.1→52.1→59.8，top-1 72.3→71.7→63.9）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/02_分析与假设.md"
+    - id: lazy_strike
+      name: "LazyStrike（频域感知选择性聚合）"
+      detail: "四步管线：通道维 1D FFT + 归一化高斯低通（Eq.4）、逐通道稳定度分数 S_{i,j}=x̂/(|x̂−x|+ε)（Eq.5）、每通道独立取稳定度 Top-K 的 patch 对原始特征取平均构造 CLS（Eq.6-7，滤波只用于'选人'、聚合用原始特征）、vote count 汇总（Eq.8）；三项'无需'：无架构改动、无后训练、无测试期干预，介入发生在预训练期的聚合规则层面"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/03_方法_LazyStrike.md"
+    - id: vote_count
+      name: "Vote Count"
+      detail: "patch i 被各通道选中次数之和（Eq.8）：跨通道一致的前景候选度量；用于 Fig 5 可视化（高票 patch 对齐前景、数量随前景证据量自适应）与下游无监督定位（阈值 = 均值 + 1σ）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/03_方法_LazyStrike.md"
+  datasets:
+    - name: "ImageNet-1k"
+      role: "pretrain+eval"
+      metrics: "PiB 诊断与两因素验证；Table 8/9 分类 IN1K（K=98 时 56.2）"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/02_分析与假设.md"
+    - name: "VOC20"
+      role: "eval"
+      metrics: "零样本语义分割 mIoU：CLIP B/16 49.0→75.0，L/14 17.1→72.4（04_实验与结论.md）"
+    - name: "VOC12"
+      role: "eval"
+      metrics: "粗分割涌现 mIoU：监督 ViT-S 29.5→41.9，DINO 47.7→55.1（04_实验与结论.md）"
+    - name: "VOC 2007"
+      role: "eval"
+      metrics: "无监督目标发现 CorLoc 64.4（04_实验与结论.md）"
+    - name: "COCO"
+      role: "eval"
+      metrics: "CorLoc 51.6；零样本分割与 OV-COCO 检测 novel +15.8/+14.4（04_实验与结论.md）"
+    - name: "ADE20K"
+      role: "eval"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+    - name: "Cityscapes"
+      role: "eval"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+    - name: "PASCAL-Context (Context59)"
+      role: "eval"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+    - name: "COCO-Stuff"
+      role: "eval"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+    - name: "LVIS"
+      role: "eval"
+      metrics: "OV-LVIS rare 类 +11.3/+6.6（04_实验与结论.md）"
+  problems:
+    - id: vit_artifact_mechanism_unknown
+      description: "ViT 的 artifact 在三种监督范式下被分别记录（注意力缺失/密集对齐失败/high-norm token），但根本机制未得到充分阐明，没有任何单一方法能全面处理这些现象"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/01_摘要与引言.md"
+  relates:
+    - to: registers
+      rel_type: CONTINUES
+      detail: "Registers 的直接续作：Registers 发现并缓解症状（high-norm token），本篇论证 high-norm 只是 lazy behavior 的后期表象，根源在聚合行为本身——'Vision Transformer requires more than just Registers'"
+      evidence: "we found that high-norm is merely a manifestation of the lazy behavior in later stages. Simply moving the high-norm tokens from the feature map to the register tokens does not fully address the underlying deficiencies in downstream tasks."
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: vit
+      rel_type: INHERITS
+      detail: "沿用 ViT 的两种全局聚合形式（GAP 式 / CLS query 式），统一记作 Q_CLS，使 Patch Score 对二者都成立"
+      evidence: "Global aggregation is applied to the output of the encoder using one of two standard forms"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/02_分析与假设.md"
+      confidence: high
+    - to: swin
+      rel_type: USES_AS_TOOL
+      detail: "§4.4 验证全局依赖因素时，在不同层把全局自注意力替换为基于窗口的注意力（引用 [21] 即 Swin 的窗口机制），构成剂量-响应实验"
+      evidence: "we replace global self-attention with window-based attention [21] at different layers"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/02_分析与假设.md"
+      confidence: high
+    - to: dino
+      rel_type: INHERITS
+      detail: "遵循 DINO [1] 的协议评估涌现性质（粗分割），并把 DINO 首次展示的无监督目标发现能力从自监督特权扩展到任意监督范式"
+      evidence: "Following [1], we evaluate emerging properties, a phenomenon only appears in self-supervised training before"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+      confidence: high
+    - to: dino
+      rel_type: CONTRAST
+      detail: "无监督目标发现以 DINO-seg 为基线：DINO+LazyStrike（CorLoc 64.4/67.6/51.6）全面优于 DINO-seg（45.8/46.2/42.1），且 55.9 FPS vs 29.4 FPS"
+      evidence: "We adopt DINO-seg [1] and LOST [31] as baselines for comparison"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+      confidence: high
+    - to: dino_detector
+      rel_type: USES_AS_TOOL
+      detail: "注意：此处 DINO[43] 是 DETR-DETR 检测器，非自监督 DINO。引言引其作为标签监督 ViT 存在注意力缺失的证据来源"
+      evidence: "DINO [43] demonstrates that label-supervised ViTs suffer from an attention deficit [26]"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: clip
+      rel_type: USES_AS_TOOL
+      detail: "方法载体之一：LazyStrike 整合进 CLIP（B/16 与 L/14），六个分割基准全部正增益"
+      evidence: "when applied to the CLIP [27] model with ViT-B/16 architecture, our method achieves a substantial increase in mIoU"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+      confidence: high
+    - to: metaclip
+      rel_type: USES_AS_TOOL
+      detail: "方法载体之一：MetaCLIP × B/16 与 L/14 六基准全部正增益（VOC20 +33.2/+49.9）"
+      evidence: "MetaCLIP (+LazyStrike) ... 72.8 (+33.2) ... 75.6 (+49.9)"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+      confidence: high
+    - to: evaclip
+      rel_type: USES_AS_TOOL
+      detail: "方法载体之一：EVACLIP × B/16 与 L/14 六基准全部正增益"
+      evidence: "EVACLIP (+LazyStrike) ... 79.6 (+23.1)"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+      confidence: high
+    - to: lost
+      rel_type: SUPERSEDES
+      detail: "无监督目标发现全面超越 LOST：CorLoc 64.4/67.6/51.6 超 +2.7/+3.6/+0.9，且 55.9 vs 29.4 FPS——LOST 依赖特征向量计算，LazyStrike 是前向传播的直接产物"
+      evidence: "our model attains a CorLoc score of 64.4% on VOC 2007, 67.6% on VOC 2012, and 51.6% on COCO, representing improvements of 2.7%, 3.6%, and 0.9% points, respectively, over the best-performing LOST model"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/04_实验与结论.md"
+      confidence: high
+    - to: maskclip
+      rel_type: DISTINGUISHES
+      detail: "角色区分：MaskCLIP [44] 首次展示 CLIP 特征做零样本分割，属事后修补一类；本文在预训练期介入、从根本上防止懒惰行为出现——'治未病 vs 治已病'"
+      evidence: "In contrast, our method tackles the problem directly during pretraining, avoiding architectural changes, post-hoc fine-tuning, and test-time interventions"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: s_clip
+      rel_type: DISTINGUISHES
+      detail: "角色区分：S-CLIP [36]（改自注意力）等 CLIP 系既有方案属'事后修补'（架构改动），且初步探索显示没有任何单一方法能全面覆盖三种范式的现象"
+      evidence: "we found that no single method [5, 36, 44] could comprehensively address these phenomena"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: clipself
+      rel_type: DISTINGUISHES
+      detail: "角色区分：CLIPSelf [37]（加对齐训练/自蒸馏）属事后修补；CLIPSelf 记录了文本监督 ViT 密集对齐失败的现象，本文给出其统一根因并在预训练期修复"
+      evidence: "CLIPSelf [37] observes that text-supervised ViTs fail to produce dense image features that are accurately aligned with textual cues"
+      source: "paper-reading-notes/2026/08/last-vit/精读笔记/01_摘要与引言.md"
+      confidence: high
+  belongs_to:
+    - topic: t_vit_line_d
+      order: 7
+      source: "paper-reading-notes/ViT分支阅读路线图.md"

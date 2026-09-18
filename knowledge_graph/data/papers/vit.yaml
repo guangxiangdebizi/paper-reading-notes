@@ -1,0 +1,189 @@
+paper:
+  id: vit
+  title: "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale"
+  aliases: ["ViT", "Vision Transformer"]
+  authors: "Dosovitskiy et al."
+  affiliation: "Google Brain"
+  year: 2021
+  venue: "ICLR 2021"
+  arxiv: "2010.11929"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/vit-paper/精读笔记"
+  source: "paper-reading-notes/2026/08/vit-paper/精读笔记/01_摘要与引言.md"
+  problem: |
+    Transformer 在 NLP 已是 de-facto standard，但在视觉中"应用受限"：注意力要么与 CNN 结合使用，
+    要么只替换 CNN 的某些部件而保留整体结构，没人敢完全抛弃 CNN；前人纯注意力模型"用了特殊的
+    注意力模式（specialized attention patterns），无法在现代加速器上高效扩展"。核心主张：
+    "这种对 CNN 的依赖是没有必要的（this reliance on CNNs is not necessary）"——纯 Transformer
+    直接作用于图像 patch 序列即可做好图像分类。（01_摘要与引言.md）
+  contributions:
+    - "图像分词：把图像切成 16×16 patch、线性投影成 token 序列，加可学习 [class] token 与标准可学习 1D 位置编码（02_方法_ViT是怎么造出来的.md）"
+    - "设计哲学：'In model design we follow the original Transformer (Vaswani et al., 2017) as closely as possible'，尽可能少修改，使可扩展的 NLP Transformer 架构及其高效实现'几乎可以开箱即用（almost out of the box）'（02_方法_ViT是怎么造出来的.md）"
+    - "提出并验证全文中心论点：'large scale training trumps inductive bias'——大规模训练能够战胜归纳偏置（01_摘要与引言.md / 03_实验_数据对比与scaling.md）"
+    - "同等迁移精度下 ViT 只需 ResNet 约 1/2–1/4 的预训练算力；ViT-H/14 以 2.5k TPUv3-core-days 打赢 12.3k 的 Noisy Student（03_实验_数据对比与scaling.md）"
+    - "机制解剖：位置编码自发涌现 2D 行列结构；注意力头自发分工（部分头局部、部分头全局），并给出'注意力距离'指标作为 CNN 感受野的对应物（04_分析与讨论.md）"
+    - "自监督初步探索：masked patch prediction（仿 BERT MLM），ViT-B/16 在 ImageNet 达 79.9%，为后续自监督路线埋下种子（04_分析与讨论.md）"
+  limitations:
+    - "小/中数据下泛化差：'在 ImageNet 这类中等规模数据集上训练且无强正则化时，这些模型的准确率仅比同尺寸 ResNet 低几个百分点'；ImageNet 上整个 ViT 家族不如 BiT ResNet，且 ViT-L 反而不如 ViT-B（01/03）"
+    - "缺乏 CNN 固有的归纳偏置（局部性、二维邻域结构、平移等变性），'在训练数据不足时泛化能力不佳'，小数据下比同算力 ResNet 过拟合更严重（01/03）"
+    - "依赖私有 JFT-300M（303M 张，Google 内部数据）才能彻底反超 CNN，'这也是当时其他团队难以复现 ViT 的原因之一'（03）"
+    - "计算成本命门：序列长度与 patch 大小平方成反比，'the Transformer's sequence length is inversely proportional to the square of the patch size'，patch 减小注意力计算量暴涨（02_方法_ViT是怎么造出来的.md）"
+  key_results:
+    - "ImageNet 88.55%（ViT-H/14, JFT 预训练），ImageNet ReaL 90.72%，CIFAR-100 94.55%，VTAB 77.63%（03_实验_数据对比与scaling.md）"
+    - "同数据对比：'ViT-L/16（JFT）在所有任务上击败 BiT-L——而两者用的是同一个预训练数据集'，控制数据变量后赢的只能是架构（03_实验_数据对比与scaling.md）"
+    - "算力：ViT-H/14 用 2.5k TPUv3-core-days，约为 Noisy Student（12.3k）的 1/5、BiT-L（9.9k）的 1/4；'ViT uses approximately 2-4x less compute to attain the same performance'（03_实验_数据对比与scaling.md）"
+    - "公开数据复现：ImageNet-21k 预训练的 ViT-L/16 仅 0.23k core-days（'一张标准 8-core TPUv3 训练约 30 天就能复现'），多数任务仍有竞争力（03_实验_数据对比与scaling.md）"
+    - "数据临界点：'300M 张图是 ViT 彻底反超 CNN 的数据临界点'；JFT 子集实验显示 ViT-B/32 在 9M 子集上输 ResNet50、在 90M+ 上反超（03_实验_数据对比与scaling.md）"
+    - "不饱和：'Vision Transformers appear not to saturate within the range tried, motivating future scaling efforts.'（03_实验_数据对比与scaling.md）"
+    - "自监督：masked patch prediction 预训练的 ViT-B/16 在 ImageNet 达 79.9%，比从头监督高 2 个点、比大规模监督预训练低 4 个点（04_分析与讨论.md）"
+    - "位置编码消融：不加掉点严重（61.4% vs 64.2%），但 1D/2D/相对位置编码几乎无差别（64.2%/64.0%/64.0%）（04_分析与讨论.md）"
+  concepts:
+    - id: patch_embedding
+      name: "Patch Embedding（图像分词 + 线性投影）"
+      detail: "把图像切成 N=HW/P² 个 P×P patch（默认 16×16），压扁后用可训练线性投影矩阵 E 映射成 D 维 token 序列；实现上等价于卷积核大小与步长均为 P 的卷积"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+    - id: cls_token_usage
+      name: "[class] token 用法（可学习分类 token）"
+      detail: "在 patch 序列最前面硬塞一个可学习向量，层层自注意力中吸收全图信息，其输出状态 z_L^0 作为整张图表示送分类头；选它'纯粹是为了跟 BERT 保持一致'，附录 D.3 证明与全局平均池化效果相当（仅需不同学习率）"
+      origin: "借自 BERT"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+    - id: learnable_1d_position_embedding
+      name: "1D 可学习位置编码"
+      detail: "切 patch 后二维结构丢失，加标准可学习 1D 位置编码补回位置信息；'没有观察到使用更高级的 2D 感知位置编码带来显著的性能提升'，模型会自己从 1D 编码中学出 2D 行列结构"
+      origin: "本文验证（沿用 Transformer 位置编码思路）"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+    - id: position_embedding_interpolation
+      name: "位置编码 2D 插值（高分辨率微调）"
+      detail: "微调用更高分辨率时 patch 大小不变、序列变长，把预训练位置编码还原成 2D 网格做双线性插值'放大'到新网格；切 patch 与位置编码插值是全文仅有的两处人工注入 2D 先验"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+    - id: hybrid_architecture
+      name: "Hybrid 混合架构"
+      detail: "输入序列可以不用原始 patch 而由 CNN 特征图切块构成；小算力下 hybrid 略优，'the difference vanishes for larger models'，大 ViT 自己就能学会局部特征提取"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+    - id: large_scale_trumps_inductive_bias
+      name: "Large Scale Training Trumps Inductive Bias（大数据战胜归纳偏置）"
+      detail: "论点：CNN 自带局部性/二维邻域结构/平移等变性先验，小数据占优；数据足够多（14M-300M）时 Transformer 能从数据中把规律自己学出来，'学习相关的模式直接从数据中获取不仅是足够的，甚至是有益的'——先天假设既是捷径也是天花板"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/01_摘要与引言.md"
+    - id: attention_distance
+      name: "注意力距离（Attention Distance）"
+      detail: "以注意力权重为权计算 query 像素与所看像素的平均图像空间距离，作为 CNN 感受野在 Transformer 中的对应物；观察到注意力距离随深度增加、部分头高度局部化扮演浅层卷积角色"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/04_分析与讨论.md"
+    - id: masked_patch_prediction
+      name: "Masked Patch Prediction（自监督初步探索）"
+      detail: "仿 BERT 完形填空：遮 50% patch（80% [mask]/10% 随机/10% 原样，与 BERT 配方一致），预测被遮 patch 的 3-bit 平均颜色；附录 B.1.2 补充该自监督不需要 JFT 大数据、100k 步后收益饱和"
+      origin: "本文（配方借自 BERT）"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/04_分析与讨论.md"
+  depends:
+    - id: transformer_architecture
+      name: "Transformer 架构（Vaswani et al., 2017）"
+      detail: "贴着原版 Transformer 设计（Pre-LN + MSA + MLP + 残差），Base/Large 配置几乎照抄 BERT，为复用 NLP 高效实现"
+      origin: "Transformer（NLP）"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+    - id: bert_cls_token
+      name: "BERT [class] token"
+      detail: "'Similar to BERT's [class] token, we prepend a learnable embedding to the sequence of embedded patches'，其输出状态作为图像表示"
+      origin: "BERT"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+    - id: bert_mlm
+      name: "BERT MLM 式自监督"
+      detail: "§4.6 自监督实验 'mimicking the masked language modeling task used in BERT'，遮 patch 配方与 BERT 一模一样"
+      origin: "BERT"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/04_分析与讨论.md"
+    - id: resnet_bit_baseline
+      name: "ResNet(BiT) 基线"
+      detail: "对照 CNN 用 ResNet 但把 BatchNorm 换成 GroupNorm、用标准化卷积（即 BiT 方案）；Hybrid 变体从 ResNet50 中层特征图接出"
+      origin: "ResNet / BiT"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+  datasets:
+    - name: "ImageNet"
+      scale: "1.3M"
+      role: "pretrain+eval"
+      metrics: "88.55% (ViT-H/14, JFT)；ImageNet 上 ViT 家族不如 BiT ResNet"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+    - name: "ImageNet-21k"
+      scale: "14M"
+      role: "pretrain"
+      metrics: "ViT-L/16 (I21k) ImageNet 85.30%"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+    - name: "JFT-300M"
+      scale: "303M"
+      role: "pretrain"
+      metrics: "Google 内部私有数据集，ViT 彻底反超 CNN 的数据临界点"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+    - name: "CIFAR-10"
+      role: "eval"
+      metrics: "99.50% (ViT-H/14, JFT)"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+    - name: "CIFAR-100"
+      role: "eval"
+      metrics: "94.55% (ViT-H/14, JFT)"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+    - name: "VTAB"
+      role: "eval"
+      metrics: "77.63% (ViT-H/14, JFT, 19 任务)"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+  problems:
+    - id: vision_cnn_dependence
+      description: "视觉中注意力只与 CNN 结合或仅替换其部件，'没人敢完全抛弃 CNN'，需要证明纯 Transformer 可行"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/01_摘要与引言.md"
+    - id: attention_models_not_scalable
+      description: "前人视觉注意力模型'these models ... have not yet been scaled effectively'，用了特殊注意力模式、无法在现代加速器上高效扩展，ResNet 类仍是 SOTA"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/01_摘要与引言.md"
+  relates:
+    - to: transformer
+      rel_type: INHERITS
+      detail: "贴着 2017 原版 Transformer 设计、最少修改，开箱即用 NLP 高效实现；仅一处不易察觉改动为 Pre-LN"
+      evidence: "In model design we follow the original Transformer (Vaswani et al., 2017) as closely as possible."
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+      confidence: high
+    - to: bert
+      rel_type: INHERITS
+      detail: "继承 BERT 的 [class] token 作为图像表示；§4.6 自监督亦沿用 BERT 的 masked language modeling 配方"
+      evidence: "Similar to BERT's [class] token, we prepend a learnable embedding to the sequence of embedded patches"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/02_方法_ViT是怎么造出来的.md"
+      confidence: high
+    - to: resnet
+      rel_type: CONTRAST
+      detail: "小数据区 ResNet 靠归纳偏置占优、ViT 过拟合更重；大数据区 ViT 反超且曲线不饱和、ResNet 更早进入平台期"
+      evidence: "ViT-B/32 is slightly faster than ResNet50; it performs much worse on the 9M subset, but better on 90M+ subsets."
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+      confidence: high
+    - to: bit
+      rel_type: CONTRAST
+      detail: "以最强 ResNet 迁移方案 BiT 为 CNN 代表；同数据（JFT）下 ViT-L/16 全任务击败 BiT-L，控制了数据变量"
+      evidence: "ViT-L/16（JFT）在所有任务上击败 BiT-L——而两者用的是同一个预训练数据集。"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+      confidence: high
+    - to: noisy_student
+      rel_type: CONTRAST
+      detail: "算力对比杀招：ViT-H/14 用 2.5k TPUv3-core-days 对 Noisy Student 的 12.3k，约 1/5 算力打出更高精度"
+      evidence: "ViT-H/14 用了 2.5k TPU-core-days，Noisy Student 用了 12.3k——约 1/5 的算力，打出更高的精度。"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/03_实验_数据对比与scaling.md"
+      confidence: high
+    - to: mae
+      rel_type: INSPIRES
+      detail: "§4.6 masked patch prediction 初步实验（ImageNet 79.9%）是 MAE 的直接思想源头；附录 B.1.2 亦指出该自监督不需要大数据"
+      evidence: "这就是 MAE（Masked Autoencoders, 2021）的直接思想源头。"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/04_分析与讨论.md"
+      confidence: high
+    - to: detr
+      rel_type: INSPIRES
+      detail: "结论未来方向：把 ViT 用到检测、分割——DETR 已有苗头，后由 Swin / Mask R-CNN 全面开花"
+      evidence: "把 ViT 用到检测、分割 | DETR 已有苗头，后来 Swin / Mask R-CNN 全面开花"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/04_分析与讨论.md"
+      confidence: high
+    - to: swin
+      rel_type: INSPIRES
+      detail: "结论与总览把 Swin 列入 ViT 开启的视觉 Transformer 时代遗产；§4.4 '不饱和'结论直接激励后续 scaling（Swin 即其一）"
+      evidence: "遗产：开启视觉 Transformer 时代 → DETR/Swin/MAE/多模态大模型"
+      source: "paper-reading-notes/2026/08/vit-paper/精读笔记/04_分析与讨论.md"
+      confidence: high
+  belongs_to:
+    - topic: t_vit_line_a
+      order: 0
+      source: "paper-reading-notes/ViT分支阅读路线图.md"

@@ -1,0 +1,217 @@
+paper:
+  id: deit
+  title: "Training Data-Efficient Image Transformers & Distillation through Attention"
+  aliases: ["DeiT", "DeiT-B", "DeiT-S", "DeiT-Ti", "DeiT-B⚗"]
+  authors: "Touvron et al."
+  affiliation: "Facebook AI"
+  year: 2021
+  venue: "ICML 2021"
+  arxiv: "2012.12877"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/deit-paper/精读笔记"
+  source: "paper-reading-notes/2026/08/deit-paper/精读笔记/README.md"
+  problem: |
+    ViT 的好结果全靠 Google 私有的 JFT-300M（3 亿张图），且 ViT 论文亲口承认
+    "do not generalize well when trained on insufficient amounts of data"；
+    "数亿张图 + 大型基础设施，限制了它的普及（thereby limiting their adoption）"。
+    DeiT 冲着这个软肋而来：只用公开 ImageNet、单机 8 卡训 3 天，得到能打的 Vision Transformer
+    ——架构一个字不改（DeiT-B ≡ ViT-B），改的全是训练方法。（01）
+  contributions:
+    - "只用 ImageNet（1.3M，公开）、单节点 8 卡训 3 天（53 小时预训练 + 可选 20 小时微调），DeiT-B（86M 参数）ImageNet top-1 达 83.1%，无任何外部数据（01）"
+    - "架构零改动：DeiT-B 与 ViT-B 完全相同，'Our only differences are the training strategies, and the distillation token'——83.1% vs ViT-B 从头训 ~77.9%，差距全部来自训练策略（01/02）"
+    - "蒸馏 token（⚗，作者自认更重要的贡献）：与 class token 平级的新 token，经自注意力与其他 embedding 交互，目标不是真实标签而是复现教师模型的预测，Transformer 专属蒸馏策略，大幅超越传统蒸馏（01/02）"
+    - "hard 蒸馏：直接拿教师预测的类别当'第二真值'，parameter-free、conceptually simpler，比经典 soft 蒸馏好 1.2 个点（02）"
+    - "最有趣的发现：'image transformers learn more from a convnet than from another transformer with comparable performance'——CNN 当老师比同等水平的 Transformer 当老师学得更好，与归纳偏置有关（01/03）"
+    - "新增轻量型号 DeiT-Ti（5M）/ DeiT-S（22M），分别对标 ResNet-18 / ResNet-50 的生态位，ViT 家族第一次有'平民型号'（01/02）"
+    - "迁移学习也能打：仅 ImageNet 预训练的 DeiT 在 CIFAR-10/100、Flowers、Cars、iNaturalist 等下游任务上有竞争力（01）"
+  limitations:
+    - "作者自陈：数据增强与正则策略全部借自 CNN 时代，未引入 Transformer 专属的增强方法——'it is likely that research on data-augmentation more adapted or learned for transformers will bring further gains'（04）"
+  key_results:
+    - "83.1% top-1（DeiT-B，仅 ImageNet、无外部数据，单机 8 卡 <3 天）；蒸馏后最高 85.2%（DeiT-B⚗↑384 / 1000 epochs），超过用 JFT-300M 训的 ViT-B 84.15% 一个点（数据量差 230 倍）（01/03）"
+    - "+6.3% top-1：相对 ViT 原论文 ImageNet-only 结果（77.9%→81.8%），纯训练配方带来的提升（03）"
+    - "蒸馏方法对比（Table 3，DeiT-B）：soft 蒸馏几乎无增益（81.8→81.8），hard 蒸馏 83.0（+1.2），蒸馏 token + 融合最优 83.4（B）/ 84.5（B↑384）；distil 头（83.1）单独已略强于 class 头（83.0）（03）"
+    - "教师选择（Table 2）：Transformer 老师（DeiT-B，81.8）教出学生 83.1；精度更低的 CNN 老师 RegNetY-4GF（80.0）反而教出 83.6——弱师出高徒；默认老师 RegNetY-16GF（82.9%，84M）（03）"
+    - "两 token 实证：class 与 distillation token 输入端余弦相似度仅 0.06（几乎正交），逐层上升至最后一层 0.93（趋同但不重合）；对照实验：换成两个 class token 则收敛至 cos=0.999、性能毫无增益——增益来自蒸馏目标而非 token 数量（02）"
+    - "分歧分析（Table 4）：distil 头与 CNN 老师的分歧率 0.100（全表最低），无蒸馏 DeiT 为 0.133——蒸馏 token 输出真的变成 CNN 的'影子'，归纳偏置传递的机制级证据（03）"
+    - "越训越香：无蒸馏 DeiT-B 约 400 epoch 饱和，蒸馏版 1000 epoch 还在涨（84.2/85.2）——教师监督提供比真实标签更丰富的信号（03）"
+    - "效率对比：蒸馏后 DeiT⚗ 反超 EfficientNet 性价比曲线；EfficientNet-B7（66M）84.3% 但仅 55 im/s，DeiT-B 家族 290/86 im/s（03）"
+    - "迁移学习（Table 7）：DeiT-B⚗↑384 在 CIFAR-10 99.2 / CIFAR-100 91.4 / Flowers 98.9 / Cars 93.9 / iNat-18 80.1，与顶级 CNN 打平、全面超 JFT-300M 的 ViT-B；CIFAR-10 从头训（7200 epoch）98.5% 小胜 RegNetY-16GF 的 98.0%（03）"
+    - "训练消融（Table 8/9）：SGD 预训练 −7.3；去 CutMix −3.1、Mixup+CutMix 同去 −6.0、去全部增强 −2.2、去 Repeated Aug −5.3；去 Random Erasing / Stochastic Depth 训练直接崩溃（保命零件非涨点零件）；ViT 的 weight decay 0.3 在 DeiT 设置下伤收敛，砍到 0.05（04）"
+    - "训练成本：DeiT-B 300 epoch 单机 8 卡 53 小时；同参数量对照组 RegNetY-16GF 反而慢 20%（大分辨率下 Transformer 吞吐占优）（04）"
+  concepts:
+    - id: distillation_token
+      name: "Distillation Token（蒸馏 token ⚗）"
+      detail: "往 ViT 输入序列再加一个与 class token 平级的特殊 token（[distil] [class] [patch...]），经自注意力与所有 patch 交互，输出端由蒸馏损失监督、专门学教师信号；class token 继续负责真实标签，两头各司其职。合法性来自 class token 机制：'监督信号挂哪个 token，哪个 token 就吸走全图信息'。推理时默认晚期融合：两分类器 softmax 输出直接相加（84.5 优于单头 84.2/84.4）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+    - id: hard_distillation
+      name: "Hard Distillation"
+      detail: "不吃教师软分布，直接拿教师预测的类别 y_t=argmax Z_t 当'第二真值'，与真实标签各占一半权重：L=½·CE(y)+½·CE(y_t)。无 τ 无 λ、零超参；天然兼容数据增强（教师看增强后的图，实时改答案）。比 soft 好 1.2 个点（83.0 vs 81.8）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+    - id: two_class_token_control
+      name: "两个 class token 对照实验"
+      detail: "把第二个 token 也设成 class token（同样目标），随机独立初始化，训练中两 token 收敛至同一向量（cos=0.999）且性能无增益——证明蒸馏 token 的增益来自蒸馏目标，不是多一个 token 带来的容量/参数"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+    - id: bicubic_pos_embed_interpolation
+      name: "Bicubic 位置编码插值"
+      detail: "微调换高分辨率时位置编码插值要用 bicubic（双三次）而非 bilinear——双线性会把向量 ℓ2 范数插低，低范数向量与预训练 Transformer 不匹配直接掉点；bicubic 近似保范数（工程细节）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+    - id: repeated_augmentation_deit
+      name: "Repeated Augmentation（重复增强）"
+      detail: "同一 batch 里同一张图以三种不同增强出现（3 重复）；形式上 300 epoch 实际只看 100 遍图，但收益显著，原文称 'provides a significant boost... one of the key ingredients'，DeiT 配方里最反直觉也最值钱的一味药"
+      origin: "本文采用（CNN 时代技巧，经消融盖章为 key ingredient）"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+  depends:
+    - id: vit_architecture
+      name: "ViT 架构（原样沿用）"
+      detail: "DeiT-B 与 ViT-B 架构完全相同，无卷积；唯一区别是训练策略与蒸馏 token"
+      origin: "vit（Dosovitskiy et al.）"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+    - id: hinton_distill
+      name: "Hinton soft 蒸馏"
+      detail: "经典 KL 软蒸馏（温度 τ 烫软教师分布）一字未改，作为蒸馏 baseline；实验证明对 Transformer 几乎无增益"
+      origin: "hinton_distill（Hinton 2015）"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+    - id: timm
+      name: "timm 训练配方库"
+      detail: "DeiT 站在 ViT 架构 + timm 库的训练技巧之上，把 CNN 时代的训练秘方系统搬给 Transformer；吞吐量对比也统一用 timm 实现测速"
+      origin: "timm（Ross Wightman）"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: adamw
+      name: "AdamW"
+      detail: "预训练必须用 Adam 系：换 SGD 直接掉 7.3 个点；weight decay 用 0.05（ViT 的 0.3 在 DeiT 设置下伤收敛）"
+      origin: "adamw"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: randaugment
+      name: "RandAugment"
+      detail: "DeiT 配方 9/0.5；贡献约 +1.2，且优于 AutoAugment"
+      origin: "randaugment"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: mixup
+      name: "Mixup"
+      detail: "prob 0.8；单独去掉掉 1.8 点，与 CutMix 同去掉 6.0 点——拼图式增强对缺先验的 Transformer 格外重要"
+      origin: "mixup"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: cutmix
+      name: "CutMix"
+      detail: "prob 1.0，单兵之王：单独去掉掉 3.1 点，是增强类里贡献最大的"
+      origin: "cutmix"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: random_erasing
+      name: "Random Erasing"
+      detail: "prob 0.25；去掉后训练直接崩溃（消融记 4.3*）——是'保命'稳定器而非涨点零件"
+      origin: "CNN 时代增强技巧（自拟 slug）"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: stochastic_depth
+      name: "Stochastic Depth（DropPath）"
+      detail: "0.1；去掉后训练直接崩溃（消融记 3.4*）——强增强+大 batch 下的稳定器"
+      origin: "CNN 时代正则技巧（自拟 slug）"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: label_smoothing
+      name: "Label Smoothing"
+      detail: "0.1；ViT 没用而 DeiT 用（Table 9 逐项对比中的差异项之一）"
+      origin: "label_smoothing"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+    - id: regnety
+      name: "RegNetY（CNN 教师）"
+      detail: "默认教师 RegNetY-16GF（82.9%，84M 参数，作者用同数据+配方自训）；CNN 教师比同级 Transformer 教师教得更好（弱师出高徒：RegNetY-4GF 80.0% 教出 83.6%）"
+      origin: "regnety"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+  datasets:
+    - name: "ImageNet-1k"
+      scale: "1.3M"
+      role: "pretrain+eval"
+      metrics: "83.1% (DeiT-B，无蒸馏) / 85.2% (DeiT-B⚗↑384, 1000 epochs)"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/01_摘要与引言.md"
+    - name: "CIFAR-10"
+      role: "eval/downstream"
+      metrics: "99.2% (DeiT-B⚗↑384)；从头训 98.5% (DeiT-B⚗)"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+    - name: "CIFAR-100"
+      role: "eval/downstream"
+      metrics: "91.4% (DeiT-B⚗↑384)"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+    - name: "Flowers"
+      role: "eval/downstream"
+      metrics: "98.9% (DeiT-B⚗↑384)"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+    - name: "Cars"
+      role: "eval/downstream"
+      metrics: "93.9% (DeiT-B⚗↑384)"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+    - name: "iNaturalist-18"
+      role: "eval/downstream"
+      metrics: "80.1% (DeiT-B⚗↑384)"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+  problems:
+    - id: vit_data_hunger
+      description: "ViT 好结果依赖私有 JFT-300M（3 亿张图）+ 大型基础设施（千 TPU-core-day 级），'thereby limiting their adoption'，公众无法复现"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/01_摘要与引言.md"
+    - id: transformer_soft_distill_ineffective
+      description: "经典 KL soft 蒸馏照搬到 Transformer 上几乎无增益（81.8→81.8），NLP/CNN 的蒸馏配方行不通"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+    - id: transformer_training_instability
+      description: "Transformer 在强增强+大 batch 下训练不稳定：去掉 Random Erasing / Stochastic Depth 训练直接崩溃，二者是'保命'稳定器"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+  relates:
+    - to: vit
+      rel_type: INHERITS
+      detail: "架构零改动，DeiT-B ≡ ViT-B，另加 Ti/S 小号；唯一区别是训练策略与蒸馏 token"
+      evidence: "Our architecture design is identical to the one proposed by Dosovitskiy et al. with no convolutions. Our only differences are the training strategies, and the distillation token."
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+      confidence: high
+    - to: vit
+      rel_type: REFUTES
+      detail: "反驳 ViT '数据不足 Transformer 泛化不好'的大数据结论：把 ViT 论文自己的结论原文引出来当靶子——同架构、同数据（ImageNet-only），靠训练配方把 77.9% 拉到 81.8%（+6.3%），证明那是配方问题不是数据问题"
+      evidence: "The paper concluded that transformers 'do not generalize well when trained on insufficient amounts of data'……These results are a major improvement (+6.3% top-1 in a comparable setting) over previous ViT models trained on Imagenet1k only."
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: regnety
+      rel_type: USES_AS_TOOL
+      detail: "RegNetY-16GF 作为默认 CNN 教师（82.9%，84M，作者自训）；CNN 教师比同级 Transformer 教师更好，学生通过蒸馏继承归纳偏置"
+      evidence: "The fact that the convnet is a better teacher is probably due to the inductive bias inherited by the transformers through distillation, as explained in Abnar et al."
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+      confidence: high
+    - to: hinton_distill
+      rel_type: BORROWS
+      detail: "经典 soft 蒸馏（KL + 温度）一字未改拿来做 baseline；实验发现它对 Transformer 几乎无增益，反衬出 hard 蒸馏与蒸馏 token 的贡献"
+      evidence: "这就是 Hinton 2015 年的经典蒸馏，一字未改。DeiT 拿它当 baseline。……soft 蒸馏约等于白做：81.8 → 81.8/83.2。"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/02_方法_ViT回顾与蒸馏token.md"
+      confidence: high
+    - to: timm
+      rel_type: BORROWS
+      detail: "训练配方的主要来源：timm 攒了一堆 CNN 时代训练秘方（Mixup/CutMix/RandAugment/Erasing/StochDepth/RepeatedAug 等），DeiT 把它们系统搬给 Transformer——配方是跨架构可迁移的资产"
+      evidence: "技术路线也说得很直白——站在 ViT 架构 + timm 库的训练技巧之上。……这些配料几乎全部来自 timm / CNN 时代。"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+      confidence: high
+    - to: abnar
+      rel_type: USES_AS_TOOL
+      detail: "引用 Abnar et al. 作为'CNN 是更好教师'现象的解释出处（蒸馏传递归纳偏置）"
+      evidence: "The fact that the convnet is a better teacher is probably due to the inductive bias inherited by the transformers through distillation, as explained in Abnar et al."
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+      confidence: high
+    - to: convnext
+      rel_type: PROVIDES_RECIPE
+      detail: "DeiT 的训练配方传给后续工作：ConvNeXt 的训练设置即'close to DeiT's and Swin's'（ConvNeXt 视角）；分支视角上，ConvNeXt 接棒追问'这些配方到底归功于注意力，还是归功于配方本身'"
+      evidence: "至此 ViT 分支的主线 A（数据民主化）讲完，下一篇 ConvNeXt 会反过来问：这些配方到底归功于注意力，还是归功于配方本身？"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+      confidence: medium
+    - to: mae
+      rel_type: INSPIRES
+      detail: "结论 §7 的预言——Transformer 专属的增强/预训练方法会带来进一步收益——后来被 MAE（自监督遮块）等验证（D-04）"
+      evidence: "光是搬运就已经打平 CNN 了，要是发明 Transformer 专属的增强方法，还能涨。这句预言后来被 MAE（自监督遮块）等验证。"
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/04_训练配方与消融_结论.md"
+      confidence: medium
+    - to: efficientnet
+      rel_type: CONTRAST
+      detail: "效率-精度性价比曲线正面对比：不蒸馏的 DeiT 略低于 EfficientNet（几乎追平），蒸馏后 DeiT⚗ 反超；并暗刺 CNN 的十年优化含'容易过拟合验证集'的架构搜索，DeiT 纯配方取胜"
+      evidence: "when DeiT benefits from the distillation from a relatively weaker RegNetY to produce DeiT⚗, it outperforms EfficientNet."
+      source: "paper-reading-notes/2026/08/deit-paper/精读笔记/03_实验_蒸馏分析与SOTA对比.md"
+      confidence: high
+  belongs_to:
+    - topic: t_vit_line_a
+      order: 1
+      source: "paper-reading-notes/ViT分支阅读路线图.md"

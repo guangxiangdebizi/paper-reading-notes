@@ -1,0 +1,182 @@
+paper:
+  id: mae
+  title: "Masked Autoencoders Are Scalable Vision Learners"
+  aliases: ["MAE", "Masked Autoencoders"]
+  authors: "Kaiming He, Xinlei Chen, Saining Xie, Yanghao Li, Piotr Dollár, Ross Girshick"
+  affiliation: "Facebook AI Research"
+  year: 2022
+  venue: "CVPR 2022"
+  arxiv: "2111.06377"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/mae/精读笔记"
+  source: "paper-reading-notes/2026/08/mae/精读笔记/01_摘要与引言.md"
+  problem: |
+    模型可以轻易过拟合一百万张图像，开始需求数亿张"往往公众无法获取"的带标签图像（JFT-300M）；
+    掩码自编码的想法在视觉中早于 BERT 存在，但进展一直落后于 NLP——为什么？论文从三视角回答：
+    架构差（ViT 已消除）、信息密度差（图像空间冗余重 → 必须高掩码比例）、decoder 角色差（像素是
+    低层信号 → decoder 设计决定表示语义层次）。（01_摘要与引言.md）
+  contributions:
+    - "非对称 encoder-decoder：encoder 只作用可见 patch 子集（无 mask token），轻量 decoder（8 块 512 宽，每 token 计算量约 encoder 的 9%）从潜在表示 + mask token 重建；decoder 预训练后即弃（.../02_方法.md）"
+    - "75% 高掩码比例：大幅消除空间冗余，创造无法靠邻近外插解决的自监督任务；与 encoder 只算 25% token 耦合成'双赢'——精度与 3× 以上加速同时兑现（.../01_摘要与引言.md）"
+    - "'掩码自编码在视觉为何落后于 NLP'的三视角分析：架构差 / 信息密度差 / decoder 角色差，各对应一个设计决策（.../01_摘要与引言.md）"
+    - "像素重建目标：MSE 只算被遮 patch（全像素损失 -0.5%），per-patch 归一化像素更优；无需 dVAE 分词器——'tokenization is not necessary'（.../02_方法.md、.../04_迁移学习与结论.md）"
+    - "无稀疏算子的简单实现：shuffle → 截断 25% → encode → 拼 mask token → unshuffle，等价于不放回均匀采样（.../02_方法.md）"
+    - "部分微调协议：linear probing 与 fine-tuning 结果大体不相关，部分微调作为中间地带揭示'MAE 表示线性可分性弱、非线性特征强'（.../03_实验与消融.md）"
+  limitations:
+    - "机理未解：低层像素重建目标为何能逼出高层语义表示，论文只给假设（'rich hidden representation inside the MAE'）——'We hope this perspective will inspire future work'（.../04_迁移学习与结论.md）"
+    - "图像与语言本质差异未被设计消除：图像没有词级语义单元，随机 patch'大概率不构成语义片段'，重建的像素也非语义实体；语义能力是涌现的而非设计的（.../04_迁移学习与结论.md）"
+    - "linear probing 协议下仍落后对比学习：MAE ViT-L 75.8% vs MoCo v3 77.6%（论文的回应：linear 可分性不是表示质量的唯一指标）（.../04_迁移学习与结论.md）"
+    - "社会影响声明：方法基于训练数据统计预测内容，会反映数据偏置（含负面社会影响），模型可能生成不存在的内容（.../04_迁移学习与结论.md）"
+  key_results:
+    - "IN1K-only 旗舰：vanilla ViT-H 448 微调 87.8%，超此前最佳 87.1%（VOLO，先进网络 + 512 尺寸）；ViT-B/L/H 为 83.6 / 85.9 / 86.9（.../03_实验与消融.md）"
+    - "加速 ≥3×：encoder 去 mask token 后训练 FLOPs 3.3×、wall-clock 2.8×；ViT-L 3.7×、ViT-H + 1 块 decoder 达 4.1×（.../03_实验与消融.md）"
+    - "mask token 进 encoder 的代价：linear probing -14%（预训练/部署输入分布失配）；fine-tuning 仅 -0.7（.../03_实验与消融.md）"
+    - "75% 掩码甜点位：linear probing 从 10% 的 54.6% 升到 75% 的 73.5%（约 +20）；fine-tuning 在 40–80% 区间钝感；BERT 只遮 15% 的跨模态对照（.../03_实验与消融.md）"
+    - "部分微调：只微调 1 个 Transformer 块 73.5% → 81.0%（+7.5）；半块（MLP 子块）79.1%；≥1 块全面反超 MoCo v3（调 4 块差 2.6%）（.../03_实验与消融.md）"
+    - "COCO 检测/实例分割（Mask R-CNN + FPN）：APbox ViT-B +2.4（50.3 vs 47.9）、ViT-L +4.0（53.3 vs 49.3），全部配置胜监督预训练；MoCo v3 回落至与监督持平（.../04_迁移学习与结论.md）"
+    - "ADE20K 语义分割（UperNet）：ViT-L 53.6 mIoU，比监督预训练 +3.7；胜 BEiT 53.3（.../04_迁移学习与结论.md）"
+    - "分类迁移：iNat2017 83.4%（H448）超 10 亿图预训练的前纪录 75.4%；Places205 66.8 / Places365 60.3 超 35 亿图弱监督前纪录（.../04_迁移学习与结论.md）"
+    - "鲁棒性：IN-A 76.7%（H448）vs 前最佳 35.8%，比监督预训练高 35 点（ViT-H 68.2 vs 33.1）；IN-C/IN-R/IN-S 全面超前纪录（.../04_迁移学习与结论.md）"
+    - "pixels vs tokens 终局（Table 7）：5 任务 × 3 规模，dVAE token 与归一化像素差异 ≤0.2（统计不相似性为零），分词化被判定非必要（.../04_迁移学习与结论.md）"
+    - "训练日程：1600 epoch linear probing 未饱和（100→1600 epoch 涨 17.8）；对比 MoCo v3 300 epoch 即饱和；零增广仍 84.0 ft，color jitter 有害（.../03_实验与消融.md）"
+  concepts:
+    - id: asymmetric_encoder_decoder
+      name: "非对称 Encoder-Decoder"
+      detail: "encoder 只看可见 25% patch（无 mask token，标准 ViT 零改动）；decoder 轻量（8 块 512 宽）处理 100% token 且预训练后即弃；encoder 含 mask token 会使 lin -14%（预训练/部署分布失配）"
+      origin: "本文"
+      source: ".../02_方法.md、.../03_实验与消融.md"
+    - id: high_masking_ratio
+      name: "75% 高掩码比例"
+      detail: "掩码比例是任务难度的旋钮：图像空间冗余重，低比例退化为纹理外插；75% 时 lin 54.6→73.5；与 encoder 只算 25% token 耦合成精度+效率双赢"
+      origin: "本文"
+      source: ".../01_摘要与引言.md、.../03_实验与消融.md"
+    - id: mae_random_sampling
+      name: "随机不放回均匀采样"
+      detail: "均匀分布防中心偏置；消融证明优于 block-wise（75% 太难，lin 63.9）与 grid-wise（太易，lin 66.0）——重建锐利 ≠ 表示好"
+      origin: "本文"
+      source: ".../02_方法.md、.../03_实验与消融.md"
+    - id: pixel_reconstruction_mse
+      name: "像素重建 MSE（只算被遮 patch）"
+      detail: "重建被遮 patch 的像素值，MSE 损失只算被遮 75%（全像素损失 -0.5%）；per-patch 归一化像素最优（85.4/73.9）；PCA 变体证明高频成分有用；'tokenization is not necessary'"
+      origin: "本文（损失只算被遮 patch 与 BERT 类似）"
+      source: ".../02_方法.md、.../04_迁移学习与结论.md"
+    - id: shuffle_implementation
+      name: "Shuffle + 截断实现（无稀疏算子）"
+      detail: "全 patch 投影成 token → 随机打乱 → 砍掉尾部 75% 进 encoder → 拼 mask token → 反打乱对齐；等价于不放回均匀采样，零定制稀疏算子"
+      origin: "本文"
+      source: ".../02_方法.md"
+    - id: partial_finetuning_protocol
+      name: "部分微调协议"
+      detail: "微调最后若干层、冻结其余，作为 linear probing 与全量微调的中间地带；1 块即 +7.5（73.5→81.0）；揭示 linear probing 与 fine-tuning 衡量不同表示性质"
+      origin: "本文"
+      source: ".../03_实验与消融.md"
+  depends:
+    - id: vit
+      name: "ViT（标准架构零改动沿用）"
+      detail: "encoder 就是一个标准 ViT，linear projection + 位置嵌入 + Transformer blocks，唯一'改动'是输入集合变为 25% 可见 patch；§4.6 的遮块初步实验是直接前身"
+      origin: "ViT"
+      source: ".../02_方法.md、.../01_摘要与引言.md"
+    - id: bert
+      name: "BERT（掩码自编码思想）"
+      detail: "'移除一部分数据、学习预测被移除的内容'；mask token [14] 是共享可学习向量（与 BERT [MASK] 同设计）；损失只算被遮 patch 与 BERT 类似"
+      origin: "BERT"
+      source: ".../01_摘要与引言.md、.../02_方法.md"
+    - id: denoising_autoencoder
+      name: "去噪自编码器（DAE）"
+      detail: "论文定位 MAE 为 'a form of denoising autoencoding, but different from the classical DAE in numerous ways'——随机 patch 掩码 vs 像素级噪声、损失只算被遮 vs 全像素、ViT vs CNN"
+      origin: "Vincent 2008 去噪自编码器"
+      source: ".../01_摘要与引言.md"
+  datasets:
+    - name: "ImageNet-1K"
+      role: "pretrain + eval（IN1K-only，无外部数据）"
+      metrics: "87.8%（ViT-H 448，IN1K-only SOTA）；B/L/H 83.6 / 85.9 / 86.9；linear probing 75.8（ViT-L）"
+      source: ".../03_实验与消融.md、.../04_迁移学习与结论.md"
+    - name: "COCO"
+      role: "eval（Mask R-CNN + FPN 检测/实例分割）"
+      metrics: "APbox 50.3（B）/ 53.3（L），超监督预训练 +2.4 / +4.0"
+      source: ".../04_迁移学习与结论.md"
+    - name: "ADE20K"
+      role: "eval（UperNet 语义分割）"
+      metrics: "mIoU 48.1（B）/ 53.6（L），ViT-L 比监督 +3.7"
+      source: ".../04_迁移学习与结论.md"
+    - name: "iNaturalist 2017/2018/2019"
+      role: "eval（分类迁移）"
+      metrics: "iNat2017 83.4%（H448），超 10 亿图预训练前纪录 75.4"
+      source: ".../04_迁移学习与结论.md"
+    - name: "Places205 / Places365"
+      role: "eval（场景分类迁移）"
+      metrics: "66.8 / 60.3（H448），超 35 亿图弱监督前纪录"
+      source: ".../04_迁移学习与结论.md"
+    - name: "IN-C / IN-Adversarial / IN-Rendition / IN-Sketch"
+      role: "eval（鲁棒性基准）"
+      metrics: "IN-A 76.7%（H448）vs 前最佳 35.8；比监督预训练高 35 点（ViT-H）"
+      source: ".../04_迁移学习与结论.md"
+  problems:
+    - id: vit_data_hunger
+      description: "模型开始需求数亿张往往公众无法获取的带标签图像（JFT-300M）；ViT 好结果依赖私有大数据（.../01_摘要与引言.md）"
+      source: ".../01_摘要与引言.md"
+    - id: masked_autoencoding_lags_in_vision
+      description: "掩码自编码在视觉的进展落后于 NLP：三视角诊断——架构差（ViT 已消除）、信息密度差、decoder 角色差（.../01_摘要与引言.md）"
+      source: ".../01_摘要与引言.md"
+    - id: linear_probing_metric_limit
+      description: "linear probing 与 fine-tuning 结果大体不相关；linear probing 错失'强而非线性特征'——而这正是深度学习的强项（.../03_实验与消融.md）"
+      source: ".../03_实验与消融.md"
+  relates:
+    - to: vit
+      rel_type: INHERITS
+      detail: "encoder 是标准 ViT 零改动沿用（仅输入变为 25% 可见 patch）；ViT §4.6 的 79.9% 遮块自监督初步实验是本篇的直接前身——主线 C 第 1 站即回到该实验"
+      evidence: "Our encoder is a ViT [16] but applied only on visible, unmasked patches."
+      source: ".../02_方法.md、README.md"
+      confidence: high
+    - to: bert
+      rel_type: INHERITS
+      detail: "掩码自编码思想、共享可学习 mask token、损失只算被遮 patch 均承自 BERT；差异在信息密度（BERT 15% vs MAE 75%）与 decoder 角色（词是语义单元 vs 像素是低层信号）"
+      evidence: "We compute the loss only on masked patches, similar to BERT [14]."
+      source: ".../01_摘要与引言.md、.../02_方法.md"
+      confidence: high
+    - to: beit
+      rel_type: SUPERSEDES
+      detail: "Table 7 终局判决：dVAE token 与归一化像素'统计上相似'（5 任务 × 3 规模差异 ≤0.2），而分词化需额外预训练阶段、2.5 亿额外数据、dVAE 编码器 40% FLOPs——MAE 更准、更简单、更快（每 epoch 3.5×）"
+      evidence: "It again shows that tokenization is not necessary for our MAE."
+      source: ".../03_实验与消融.md、.../04_迁移学习与结论.md"
+      confidence: high
+    - to: moco_v3
+      rel_type: CONTRAST
+      detail: "对比学习路线分野：linear probing MAE 落后（75.8 vs 77.6），但部分微调全面反超（调 4 块差 2.6%）；检测迁移 MoCo v3 回落至与监督持平、落后 MAE 约 4 点；MoCo v3 300 epoch 饱和而 MAE 1600 epoch 未饱和"
+      evidence: "MoCo v3 has higher linear probing accuracy; however, all of its partial fine-tuning results are worse than MAE."
+      source: ".../03_实验与消融.md、.../04_迁移学习与结论.md"
+      confidence: high
+    - to: simclr
+      rel_type: CONTRAST
+      detail: "增广依赖的分野：仅裁剪增广使 SimCLR 掉 28%（BYOL 13%），且无增广时两视图相同陷入平凡解；MAE 零增广仍 84.0——掩码本身承担增广角色，非对称架构排除平凡解"
+      evidence: "using cropping-only augmentation reduces the accuracy by 13% and 28% respectively for BYOL [21] and SimCLR [7]"
+      source: ".../03_实验与消融.md"
+      confidence: high
+    - to: byol
+      rel_type: CONTRAST
+      detail: "同上——对比学习严重依赖数据增广，MAE 不依赖；这是自编码路线与对比路线的根本行为差异之一"
+      evidence: "using cropping-only augmentation reduces the accuracy by 13% and 28% respectively for BYOL [21] and SimCLR [7]"
+      source: ".../03_实验与消融.md"
+      confidence: high
+    - to: dino
+      rel_type: CONTRAST
+      detail: "Table 3 自监督 ViT 微调对比：DINO ViT-B 82.8 vs MAE 83.6；掩码自编码与自蒸馏两条自监督路线的正面比较之一"
+      evidence: "In Table 3 we compare the fine-tuning results of self-supervised ViT models."
+      source: ".../03_实验与消融.md"
+      confidence: medium
+    - to: deit
+      rel_type: CONTRAST
+      detail: "同一主题（让 ViT 在 IN1K 上可用）的不同路线：DeiT 靠蒸馏 + 强增广在监督设定下做'数据民主化'，MAE 靠自监督直接绕开标签——两条路线合起来回应 ViT 的数据依赖根问题"
+      evidence: "主线 A 的 DeiT 在监督设定下做'数据民主化'，本篇在自监督路线上直接绕开标签——两条路线合起来回答了 ViT 留下的'数据依赖'根问题。"
+      source: "README.md"
+      confidence: medium
+    - to: detr
+      rel_type: CORROBORATES
+      detail: "'无定制算子'的工程卖点一脉相承：DETR 用标准 CNN + 标准 Transformer 几百行代码，MAE 用 shuffle+截断零稀疏算子——ViT 分支普遍把'无定制算子'当作方法学加分项"
+      evidence: "这与 DETR 的'几百行代码'卖点一脉相承：ViT 分支的工作普遍把'无定制算子'当作方法学的加分项。"
+      source: ".../02_方法.md"
+      confidence: medium
+  belongs_to:
+    - topic: t_vit_line_c
+      order: 5
+      source: "paper-reading-notes/ViT分支阅读路线图.md"

@@ -1,0 +1,232 @@
+paper:
+  id: convnext
+  title: "A ConvNet for the 2020s"
+  aliases: ["ConvNeXt"]
+  authors: "Zhuang Liu, Hanzi Mao, Chao-Yuan Wu, Christoph Feichtenhofer, Trevor Darrell, Saining Xie"
+  affiliation: "FAIR + UC Berkeley"
+  year: 2022
+  venue: "CVPR 2022"
+  arxiv: "2201.03545"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/convnext-paper/精读笔记"
+  source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/README.md"
+  problem: |
+    层次化 Transformer（如 Swin）重新引入了若干卷积先验才成为通用视觉骨干，然而"这类混合方法
+    的有效性，很大程度上仍被归功于 Transformer 固有的优越性，而非卷积本身固有的归纳偏置"
+    （the effectiveness of such hybrid approaches is still largely credited to the intrinsic
+    superiority of Transformers, rather than the inherent inductive biases of convolutions）。
+    核心是归因问题/混杂变量：ConvNet 与层次化视觉 Transformer 都具备相似归纳偏置，但在训练过程
+    与宏观/微观架构设计上差异显著——好比"宣布这房子贵是因为有电梯，可它其实同时换了施工队、改了
+    户型、换了装修"，工艺（训练配方）、户型（宏观设计）、装修（微观设计）与电梯（注意力）四层变量
+    全纠缠。本文通过控制 FLOPs 大致不变、一次只改一个变量的逐步"现代化"，识别这些混杂变量，
+    检验纯 ConvNet 的极限。（01_摘要与引言.md）
+  contributions:
+    - "现代化方法论：从 ResNet-50 出发逐步'modernize'成层次化视觉 Transformer 的样子，全程不引入注意力、FLOPs 大致受控、ResNet-50 档每个数字三随机种子取平均——把架构对比做成因果推断（01/02）"
+    - "训练配方现代化（§2.1）：采用 'close to DeiT's and Swin's' 的配方（300 epochs、AdamW、Mixup、CutMix、RandAugment、Random Erasing、Stochastic Depth、Label Smoothing），不动结构就把 ResNet-50 从 76.1% 提到 78.8%（+2.7），证明性能差距相当一部分源自训练技巧（01/02）"
+    - "宏观设计（§2.2）：stage 计算比 (3,4,6,3)→(3,3,9,3)（78.8→79.4）；patchify stem 用 4×4、stride 4 卷积替换（79.4→79.5，几乎持平——patchify 不是 Transformer 的性能来源）（02）"
+    - "ResNeXt-ify（§2.3）：depthwise conv（分组数=通道数）+ 1×1 conv 实现空间混合与通道混合分离（与 Transformer '注意力混空间、MLP 混通道'同构），宽度 64→96，精度到 80.5%（02）"
+    - "倒瓶颈（§2.4）：采用扩展比 4 的倒瓶颈（Transformer MLP 隐藏维度 4 倍宽的同款设计），FLOPs 反降至 4.6G，精度 80.5→80.6%（02）"
+    - "大卷积核实验（§2.5）：depthwise conv 上移（铺垫性回撤到 79.9）后卷积核 3×3→7×7 涨回 80.6%，收益在 7×7 饱和（9×9/11×11 不再涨）（02）"
+    - "微观设计做减法（§2.6）：ReLU→GELU（不变）；激活减到只剩 1 个（81.3，追平 Swin-T）；BN 减到只剩 1 个（81.4，首次反超）；BN→LN（81.5，毛坯 ResNet 上直接换会次优、翻新后期换才成立）；独立下采样层先致训练发散、在分辨率改变处补 LN 后冲到 82.0%（02）"
+    - "ConvNeXt 家族与 scaling 验证：T/S/B/L/XL 五个型号只差通道 C 与块数 B 两个参数；1K/22K 全档位追平或超过 Swin，22K XL 达 87.8%，COCO 检测与 ADE20K 分割超越 Swin（03）"
+  limitations:
+    - "任务边界（附录 F）：ConvNeXt 更适合感知类任务；多模态学习中跨模态特征交互更适合用 cross-attention，需要离散、稀疏或结构化输出的任务 Transformer 更灵活——ConvNeXt 的边界划在'感知'与'生成/结构化输出'之间（04）"
+    - "§2 结尾自认：小规模探索的发现'encouraging but not yet completely convincing'，视觉 Transformer 真正的区分度优势在 scaling 行为，需放大验证（03）"
+    - "模型本身不全新：许多设计选择过去十年都被分别研究过，只是从未被集合在一起（'not completely new'）（04）"
+  key_results:
+    - "翻新账本（ResNet-50 档，76.1→82.0）：76.1 基线 → 换训练配方 78.8（+2.7）→ stage ratio 79.4 → patchify stem 79.5 → depthwise+宽度 96 80.5 → 倒瓶颈 80.6 → depthwise 上移 79.9（铺垫回撤）→ 7×7 卷积核 80.6 → GELU 80.6 → 激活减到 1 个 81.3（追平 Swin-T）→ BN 减到 1 个 81.4（首次反超）→ BN→LN 81.5 → 独立下采样+三处 LN 82.0（02_现代化路线图.md §八总账）"
+    - "账本结构：配方 +2.7 / 宏观 +0.7 / 结构 +1.1 / 微观 +1.5——全程零注意力，全程 FLOPs 与 Swin-T 对齐（02）"
+    - "ImageNet-1K 全档位对 Swin 全部胜出或打平：T 82.1 vs 81.3、S 83.1 vs 83.0、B(224) 83.8 vs 83.5、B(384) 85.1 vs 84.5、L(384) 85.5；B@384² 高 0.6 点且吞吐高 12.5%（95.7 vs 85.1 image/s）（03）"
+    - "ImageNet-22K 预训练：B(224) 85.8 vs 85.2、B(384) 86.8 vs 86.4、L(224) 86.6 vs 86.3、L(384) 87.5 vs 87.3，XL(384) 87.8——'设计得当的大数据预训练卷积网络不逊于视觉 Transformer'，scaling 曲线未到头（03）"
+    - "isotropic 同构对照（§3.3）：ConvNeXt-S/B/L 与 ViT-S/B/L 维度/深度/参数/FLOPs 全对齐后完全打平（79.7 vs 79.8、82.0 vs 81.8、82.6 vs 82.6），且 ViT-L 用的是 MAE 自监督预训练权重，ConvNeXt 仅靠有监督即追平（03）"
+    - "COCO 检测：小档位打平（T 50.4 AP^box），22K 大档位拉开——ConvNeXt-B‡ 54.0 vs Swin-B‡ 53.0（+1.0 box AP、+1.1 mask AP），XL‡ 55.2；ADE20K 分割：ConvNeXt-B‡ 53.1 vs Swin-B‡ 51.7（+1.4 mIoU）（03）"
+    - "鲁棒性裸考（无任何专门模块/微调）：ConvNeXt-T 几乎追平专为鲁棒设计的 RVT-S；ConvNeXt-XL (22K/384) 在 ImageNet-A 69.3%、R 68.2%、C mCE 38.8（04）"
+    - "大档位轨迹（附录 C）：ResNet-200 档 78.2 → 83.6 反超 Swin-B 83.5；倒瓶颈（+0.79）与归一化减法（+0.46）在大模型上收益更大（04）"
+    - "工程效率：A100+TF32+channel-last 下吞吐较 Swin 高 46~49%（T 档 1943 vs 1326 img/s）；训练更省显存（Cascade Mask R-CNN+B 骨干 17.4 vs 18.5 GB）；全卷积换分辨率免位置编码插值（03/04）"
+  concepts:
+    - id: modernization_methodology
+      name: "逐步现代化方法论"
+      detail: "从 ResNet 逐步现代化到 Swin 的设计：每步只改一件事、FLOPs 大致受控、三随机种子取平均，把系统级架构对比拆成因果推断；'顺序即结论'——同一改动（BN→LN、独立下采样）在不同上下文里结果相反"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: patchify_stem
+      name: "Patchify Stem"
+      detail: "用 4×4、stride 4 卷积替换 ResNet 的 7×7+maxpool stem；精度几乎持平，证明 patchify 不是 Transformer 的性能来源也不是其专利，只是图像入 token/特征图的入口方式"
+      origin: "取自视觉 Transformer 设计"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: depthwise_conv_early
+      name: "Depthwise Conv 上移"
+      detail: "把 depthwise conv 层的位置上移到块前部（对应 Transformer 'MSA 在 MLP 之前'的排布），让复杂/低效模块（大核卷积）在通道更窄处工作、稠密 1×1 层承担重活；本步自身掉分（80.6→79.9），属大核实验的结构性铺垫"
+      origin: "取自 Transformer 块排布设计"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: large_kernel_7x7_saturation
+      name: "大卷积核 7×7 饱和"
+      detail: "卷积核 3×3→7×7 涨分且 FLOPs 基本不变，但收益在 7×7 达到饱和（9×9/11×11 不再涨，大容量模型同样验证）；7×7 与 Swin 窗口尺寸暗合——两种架构收敛到同一个局部视野大小"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: activation_reduction
+      name: "激活函数减法"
+      detail: "把残差块中除两个 1×1 层之间一个之外的所有 GELU 全部移除（复刻 Transformer 块样式），涨 0.7 至 81.3 追平 Swin-T——多余的激活是干扰不是保险"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: norm_reduction_bn_to_ln
+      name: "归一化减法与 BN→LN"
+      detail: "移除两个 BN 只留一个（81.4 首次反超 Swin-T）；BN→LN 在原始 ResNet 上直接换会次优，完成全部改造后再换则毫无困难且略好（81.5）——改动的顺序本身就是实验变量"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: independent_downsampling
+      name: "独立下采样层"
+      detail: "改用 stride 2 的 2×2 conv 独立下采样层（Swin 式）意外导致训练发散；修复方案是在每个空间分辨率改变处加 LN（每个下采样层前、stem 后、最终全局平均池化后各一），救活后冲到 82.0%——救场用的 LN 并不专属 Transformer"
+      origin: "取自 Swin 设计（含本文排查修复）"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: convnext_counterintuitive_findings
+      name: "三个反直觉发现"
+      detail: "①卷积核 7×7 即饱和；②减法比加法值钱（去激活、去归一化反而涨分）；③改动顺序决定成败（BN→LN 毛坯失败、翻新后成功；独立下采样先塌方后救场）；附加一条：没有一个新发明，全是旧零件（depthwise conv、倒瓶颈、GELU、LN）第一次照 Transformer 图纸组装到一起"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/04_结论与附录精华.md"
+  depends:
+    - id: resnet
+      name: "ResNet-50 / ResNet-200"
+      detail: "翻新的出发点：从标准 ResNet（ResNet-50/ResNet-200）出发逐项现代化"
+      origin: "ResNet"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: resnext
+      name: "ResNeXt 分组加宽原则"
+      detail: "ResNeXt-ify：引入分组数等于通道数的 depthwise conv 后，按 ResNeXt '用更多分组、扩展宽度'原则把通道 64→96（与 Swin-T 对齐），精度至 80.5%"
+      origin: "ResNeXt"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: swin_design_direction
+      name: "Swin 设计方向（改造图纸）"
+      detail: "现代化每一步改动的方向全部来自 Swin Transformer 的设计：stage ratio 1:1:3:1、MSA 前置排布、≥7×7 局部窗口、下采样处 LN 等，但不引入任何注意力"
+      origin: "Swin Transformer"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: depthwise_conv
+      name: "Depthwise Conv（MobileNet/Xception）"
+      detail: "空间/通道混合分离的核心构件；收官节明确 'depthwise conv 来自 MobileNet/Xception'，且与自注意力加权求和相似（按通道操作、只在空间维度混合）"
+      origin: "MobileNet / Xception"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: inverted_bottleneck
+      name: "倒瓶颈（扩展比 4）"
+      detail: "Transformer 块 MLP 隐藏维度 4 倍宽的设计与卷积网络扩展比 4 的倒瓶颈相通；采用后 FLOPs 反降至 4.6G 且精度微涨"
+      origin: "MobileNetV2（'The idea was popularized by MobileNetV2'）"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: deit_swin_training_recipe
+      name: "DeiT/Swin 训练配方"
+      detail: "'close to DeiT's and Swin's'：300 epochs（原 90）、AdamW、Mixup、CutMix、RandAugment、Random Erasing、Stochastic Depth、Label Smoothing；配方本身即 +2.7"
+      origin: "DeiT / Swin Transformer"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - id: layer_scale
+      name: "Layer Scale"
+      detail: "给每个残差分支乘可学习小系数（初始 1e-6），稳定深层网络训练；§3.1 训练设置新面孔之一（笔记未注明该技术的来源）"
+      origin: "本文训练设置采用（笔记未注明来源）"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+    - id: ema
+      name: "EMA（指数滑动平均）"
+      detail: "缓解大模型过拟合；但与 BatchNorm 冲突——'using EMA severely hurts models with BatchNorm layers'，§2 阶段关闭 EMA；22K 预训练用 EMA 而微调从最终权重起步（例外：1K 训练的 ConvNeXt-L 过拟合严重才用 EMA 起步）"
+      origin: "通用训练技巧"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/04_结论与附录精华.md"
+    - id: mae
+      name: "MAE 预训练权重（对照用）"
+      detail: "§3.3 同构对照实验中 ViT-L 使用 MAE 自监督预训练的权重，ConvNeXt 仅靠有监督训练即追平（isotropic L 档 82.6 vs 82.6）"
+      origin: "MAE"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+  datasets:
+    - name: "ImageNet-1K"
+      scale: "§2 探索全部在此训练评估"
+      role: "pretrain+eval"
+      metrics: "ResNet-50 76.1 → ConvNeXt-T 82.1；全档位 vs Swin 追平或超过"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+    - name: "ImageNet-22K"
+      role: "pretrain"
+      metrics: "22K 预训练 90 epochs → 1K 微调 30 epochs（逐层学习率衰减）；ConvNeXt-XL(384) 87.8%"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+    - name: "COCO"
+      role: "eval（检测/实例分割，Mask R-CNN / Cascade Mask R-CNN 3× schedule）"
+      metrics: "ConvNeXt-B‡ 54.0 vs Swin-B‡ 53.0 AP^box（+1.0）；XL‡ 55.2 AP^box"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+    - name: "ADE20K"
+      role: "eval（语义分割，UperNet 160K 迭代）"
+      metrics: "ConvNeXt-B‡ 53.1 vs Swin-B‡ 51.7 mIoU（+1.4）"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+    - name: "ImageNet-C"
+      role: "eval（15 种图像损坏，mCE 越低越好，裸考）"
+      metrics: "ConvNeXt-B mCE 46.8；ConvNeXt-XL (22K/384) 38.8"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/04_结论与附录精华.md"
+    - name: "ImageNet-A"
+      role: "eval（自然对抗样本，裸考）"
+      metrics: "ConvNeXt-XL (22K/384) 69.3%（ConvNeXt-B 36.7%）"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/04_结论与附录精华.md"
+    - name: "ImageNet-R"
+      role: "eval（艺术 rendition，裸考）"
+      metrics: "ConvNeXt-XL (22K/384) 68.2%"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/04_结论与附录精华.md"
+    - name: "ImageNet-Sketch"
+      role: "eval（素描，裸考）"
+      metrics: "ConvNeXt-XL (22K/384) 55.0%"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/04_结论与附录精华.md"
+  problems:
+    - id: confounding_variables_in_arch_comparison
+      description: "混杂变量问题：ConvNet 与层次化 Transformer 对比时，训练配方、宏观设计、微观设计、注意力多层变量纠缠，性能差距被整体归功于 Transformer 固有优越性；ConvNeXt 以控制 FLOPs + 一次一改动逐项拆解"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/01_摘要与引言.md"
+    - id: belief_transformer_better_at_scale
+      description: "广泛持有的观点：视觉 Transformer 归纳偏置更少，因而在更大数据规模预训练时能优于 ConvNet（'a widely held view is that vision Transformers have fewer inductive biases thus can perform better than ConvNets when pre-trained on a larger scale'）；ConvNeXt 用 22K 预训练正面检验并推翻"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+  relates:
+    - to: swin
+      rel_type: CONTRAST
+      detail: "全篇对照组本体：不装电梯（零注意力）、FLOPs/参数/吞吐/显存对齐的纯 ConvNet，ImageNet-1K/22K 全档位、COCO、ADE20K、鲁棒性、吞吐全面追平或反超 Swin"
+      evidence: "ConvNeXts compete favorably with Transformers in terms of accuracy and scalability, achieving 87.8% ImageNet top-1 accuracy and outperforming Swin Transformers on COCO detection and ADE20K segmentation"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: swin
+      rel_type: BORROWS
+      detail: "逐步现代化的改动方向全部来自 Swin Transformer 的设计（stage ratio、块排布、窗口尺寸、下采样处 LN 等），只是不引入任何注意力；且这些设计在卷积文献中也均被分别研究过"
+      evidence: "It is worth noting that all design choices discussed so far are adapted from vision Transformers. ... these designs are not novel even in the ConvNet literature — they have all been researched separately, but not collectively, over the last decade."
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+      confidence: high
+    - to: vit
+      rel_type: REFUTES
+      detail: "正面回应 ViT '大数据战胜归纳偏置'论点：设计得当的 ConvNet 在 22K 上同样随数据上涨且与同尺寸 Swin 持平或更好，偏置不是天花板；§3.3 isotropic 同构对照中 ConvNeXt 块在纯 ViT 式骨架上与 ViT-S/B/L 完全打平，说明结论不依赖层次结构"
+      evidence: "Our results demonstrate that properly designed ConvNets are not inferior to vision Transformers when pre-trained with large dataset — ConvNeXts still perform on par or better than similarly-sized Swin Transformers."
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+      confidence: high
+    - to: deit
+      rel_type: INHERITS
+      detail: "训练配方 'close to DeiT's and Swin's'（300 epochs、AdamW、Mixup、CutMix、RandAugment、Random Erasing、Stochastic Depth、Label Smoothing），配方本身值 +2.7——DeiT 把这套工艺打磨成熟，ConvNeXt 的翻新以此为基准工艺"
+      evidence: "we use a training recipe that is close to DeiT's and Swin Transformer's. ... this enhanced training recipe increased the performance of the ResNet-50 model from 76.1% to 78.8% (+2.7%)"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+      confidence: high
+    - to: resnet
+      rel_type: BORROWS
+      detail: "翻新对象：以标准 ResNet-50/ResNet-200 为出发点（老房子），逐项现代化后精度从 76.1% 提升至 82.0%（ResNet-200 档 78.2→83.6）"
+      evidence: "We start with a standard ResNet (e.g. ResNet-50) trained with an improved procedure. We gradually 'modernize' the architecture to the construction of a hierarchical vision Transformer (e.g. Swin-T)."
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/01_摘要与引言.md"
+      confidence: high
+    - to: resnext
+      rel_type: BORROWS
+      detail: "ResNeXt-ify：引入 depthwise conv 后按 ResNeXt '用更多分组、扩展宽度'原则把通道 64→96（与 Swin-T 对齐），精度至 80.5%"
+      evidence: "按 ResNeXt '用更多分组、扩展宽度'的原则把通道数从 64 加到 96（与 Swin-T 对齐）→ 精度到 80.5%（FLOPs 暂时超到 5.3G）"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+      confidence: high
+    - to: mobilenetv2
+      rel_type: BORROWS
+      detail: "倒瓶颈设计（扩展比 4，先放宽再压窄，与 ResNet 瓶颈方向相反）：FLOPs 反降至 4.6G 且精度微涨（80.5→80.6，大档位 81.9→82.6）"
+      evidence: "this Transformer design is connected to the inverted bottleneck design with an expansion ratio of 4 used in ConvNets. The idea was popularized by MobileNetV2."
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/02_现代化路线图.md"
+      confidence: high
+    - to: efficientnetv2
+      rel_type: SUPERSEDES
+      detail: "22K 预训练场景下被 ConvNeXt 超过：EfficientNetV2（搜索架构、带 SE 模块、渐进训练）在 1K 上很强，但 22K 规模下大规模训练的红利被更简单的架构吃得更多"
+      evidence: "搜索架构出身的 EfficientNetV2（带 SE 模块、渐进训练）在 1K 上很强，但换成 22K 预训练就被 ConvNeXt 超过——大规模训练的红利，简单架构吃得更多"
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/03_实验与消融.md"
+      confidence: medium
+    - to: transformer
+      rel_type: DISTINGUISHES
+      detail: "角色边界区分（附录 F）：ConvNeXt 赢的是感知类任务（分类/检测/分割）；多模态跨模态交互更适合 cross-attention，需要离散、稀疏或结构化输出的任务 Transformer 更灵活——边界划在'感知'与'生成/结构化输出'之间"
+      evidence: "ConvNeXt may be more suited for certain tasks, while Transformers may be more flexible for others. A case in point is multi-modal learning, in which a cross-attention module may be preferable for modeling feature interactions across many modalities. Additionally, Transformers may be more flexible when used for tasks requiring discretized, sparse, or structured outputs."
+      source: "paper-reading-notes/2026/08/convnext-paper/精读笔记/04_结论与附录精华.md"
+      confidence: high
+  belongs_to:
+    - topic: t_vit_line_a
+      order: 2
+      source: "paper-reading-notes/ViT分支阅读路线图.md"

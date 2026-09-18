@@ -1,0 +1,187 @@
+paper:
+  id: swin
+  title: "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows"
+  aliases: ["Swin Transformer", "Swin", "Swin-T", "Swin-S", "Swin-B", "Swin-L"]
+  authors: "Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, Baining Guo（Liu et al.）"
+  affiliation: "Microsoft Research Asia"
+  year: 2021
+  venue: "ICCV 2021（Marr Prize）"
+  arxiv: "2103.14030"
+  status: "已读"
+  notes_path: "paper-reading-notes/2026/08/swin-paper/精读笔记"
+  source: "paper-reading-notes/2026/08/swin-paper/精读笔记/01_摘要与引言.md"
+  problem: |
+    将 Transformer 从语言迁移到视觉面临两道坎："视觉实体的尺度存在巨大变化，以及相比文本中的词语，
+    图像中像素的分辨率要高得多"。已有 ViT/DeiT 只产生单一低分辨率特征图、自注意力复杂度随图像尺寸
+    二次增长，"不适合在密集视觉任务或高分辨率输入下用作通用骨干网络"。本文目标是扩展 Transformer
+    的适用范围，使其像 Transformer 在 NLP 中、CNN 在视觉中那样"成为计算机视觉的通用骨干网络"
+    ——目标不是"在分类上赢 ViT"，而是"接班 CNN"。（01_摘要与引言.md）
+  contributions:
+    - "层次化四级架构：patch 4×4 起步（保留细粒度底层信息，ViT 是 16×16），经三次 patch merging 得到 H/4→H/8→H/16→H/32 四级特征图，分辨率逐级减半、通道逐级翻倍（02_方法.md）"
+    - "patch merging：2×2 相邻 patch 拼接 + 线性层，token 数砍到 1/4（分辨率 2 倍下采样）、输出维度 2C——'晋升设管理层'（02_方法.md）"
+    - "窗口内局部自注意力 W-MSA：自注意力限制在不重叠窗口内，Ω(W-MSA) = 4hwC² + 2M²hwC，M 固定（默认 7）时复杂度相对图像尺寸线性，对比全局 MSA 的 Ω(MSA) = 4hwC² + 2(hw)²C（02_方法.md）"
+    - "移位窗口 SW-MSA：连续层间窗口划分平移半窗 (⌊M/2⌋, ⌊M/2⌋) 桥接前层窗口、保跨窗连接；碎窗口问题用向左上循环移位 + 子窗口掩码解决，批处理窗口数与常规划分一致、不增开销（02_方法.md）"
+    - "相对位置偏置 B：Attention(Q,K,V) = SoftMax(QKᵀ/√d + B)V，用 (2M−1)² 小表 B̂ 压缩参数化；消融显示优于绝对位置嵌入，叠加绝对嵌入反而害密集任务（02/03）"
+    - "分辨率刻意对齐 ResNet/VGG 系 {H/4, H/8, H/16, H/32}，可便利替换现有方法骨干、对接 FPN/U-Net 等密集预测技术（02_方法.md）"
+    - "Swin 块 = 标准 Transformer 块配方（Pre-LN、两层 MLP 带 GELU、残差），唯一改动是把全局 MSA 换成基于移位窗口的 MSA；W-MSA/SW-MSA 两块配对交替（02_方法.md）"
+    - "T/S/B/L 四档变体锚定既有模型 FLOPs 档位（Swin-T≈ResNet-50/DeiT-S，Swin-B≈ViT-B/DeiT-B），全篇统一 M=7、每头 d=32、MLP 扩展比 α=4（02_方法.md）"
+    - "组织方案可泛化：把层次化+移位窗口搬给 all-MLP 架构得 Swin-Mixer，显著优于 MLP-Mixer，'真正值钱的是窗口的组织方式而非注意力本身'（04_结论与附录精华.md）"
+  limitations:
+    - "笔记未设独立局限章节；仅第 3 站记载论文自认实现未充分优化：ResNe(X)t 跑在高度优化的 cudnn 算子上，'Swin 只是没怎么优化的 PyTorch 内置函数实现——真机速度还有余量没吃完'（03_实验与消融.md）"
+  key_results:
+    - "ImageNet-1K 87.3 top-1（Swin-L，22K 预训练，384² 输入）（03_实验与消融.md）"
+    - "同 FLOPs 稳定超 DeiT +1.4~1.5：Swin-T 81.3 vs DeiT-S 79.8（+1.5）；Swin-B 83.5/84.5 vs DeiT-B 81.8/83.1（+1.5/1.4）（03_实验与消融.md）"
+    - "22K 预训练同吞吐对位：Swin-B 86.4 vs ViT-B 84.0（净胜 +2.4，Swin FLOPs 还更低 47.0G vs 55.4G）（03_实验与消融.md）"
+    - "COCO test-dev 58.7 box AP / 51.1 mask AP（新 SOTA，超 Copy-paste +2.7、DetectoRS +2.6）（03_实验与消融.md）"
+    - "COCO 四检测框架只换骨干一致 +3.4~4.2 box AP（Cascade Mask R-CNN/ATSS/RepPoints v2/Sparse R-CNN，R-50→Swin-T）；对 ResNeXt-101-64x4d Swin-B 赢 +3.6 box/+3.3 mask（03_实验与消融.md）"
+    - "ADE20K 53.5 mIoU（val，新 SOTA，超 SETR +3.2 且模型更小 234M vs 308M）；相近算力超 DeiT-S +5.3、超 ResNet-101 +4.4（03_实验与消融.md）"
+    - "移位消融：+1.1 top-1 / +2.8 box / +2.8 mIoU——'越是要求空间细粒度输出的任务，越依赖跨窗信息流通'（03_实验与消融.md）"
+    - "位置编码消融：相对偏置独用最优；叠加绝对嵌入分类 +0.4 但检测 -0.2、分割 -0.6 mIoU——平移不变性归纳偏置对密集预测仍要紧（03_实验与消融.md）"
+    - "延迟判决（Table 5/6）：cyclic 移位比 padding 提速 13~18%；比朴素滑动窗口整机快 4.1×（T）且精度打平（81.3 vs 81.4）——'不是你想法不行，是你的想法跑不快'（03_实验与消融.md）"
+    - "一致规律：任务越'密集'，Swin 相对 ViT/DeiT 优势越大（分类 +1.5 → 检测 +2.5~4 → 分割 +5.3）——二次复杂度与单一层级恰在密集任务上病得最重（03_实验与消融.md）"
+    - "Swin-Mixer 81.3% vs MLP-Mixer 76.4%（计算预算还略小 10.4G vs 12.7G），层次化设计与移位窗口方案可泛化（04_结论与附录精华.md）"
+    - "附录两处巧思：stage 4 特征图恰为 7×7=窗口大小，最深层悄然恢复全局注意力（token 仅 49 个）；分类用全局平均池化替代 class token，'与 ViT、DeiT 那样使用额外的 class token 同样精确'（04_结论与附录精华.md）"
+  concepts:
+    - id: swin_hierarchical_architecture
+      name: "层次化四级架构（hierarchical feature maps）"
+      detail: "patch 4×4 切分起步 → 线性嵌入 → 四个 Stage（W/SW-MSA 块交替 + 三次 patch merging），输出 H/4→H/8→H/16→H/32 四级特征图，分辨率逐级减半、通道 C→2C→4C→8C；治'视觉实体尺度差异大'，天然对应多尺度（02_方法.md）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: patch_merging
+      name: "Patch Merging（patch 合并层）"
+      detail: "每组 2×2 相邻 patch 特征拼接后施加线性层：token 数变为 1/4（分辨率 2 倍下采样），输出维度 2C——'晋升设管理层：编制减半，职权翻倍'（02_方法.md）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: w_msa
+      name: "W-MSA（窗口内局部自注意力）"
+      detail: "自注意力限制在将图像划分而成的不重叠窗口内局部计算；Ω(W-MSA) = 4hwC² + 2M²hwC，窗口内 patch 数固定（默认 M=7，49 个 patch 一窗），复杂度相对图像尺寸线性，对比全局 MSA 的 2(hw)²C 二次项；窗口内共享同一 key set，硬件访存友好（02_方法.md）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: sw_msa
+      name: "SW-MSA（移位窗口自注意力）"
+      detail: "连续自注意力层之间移动窗口划分（平移半窗 ⌊M/2⌋），桥接前层各窗口、保跨窗连接；移位切出的碎窗口用向左上循环移位（cyclic shift）+ 子窗口掩码（注意力分数置 −∞）解决，批处理窗口数不增；消融 +1.1 top-1 / +2.8 box / +2.8 mIoU（02/03）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: relative_position_bias
+      name: "相对位置偏置 B（relative position bias）"
+      detail: "Attention(Q,K,V) = SoftMax(QKᵀ/√d + B)V；每轴相对位置范围 [−M+1, M−1]，故用 (2M−1)×(2M−1) 小表 B̂ 压缩参数化（M=7 时 169 项代替 2401 项）；消融优于绝对位置嵌入，叠加绝对嵌入反而害密集任务（-0.6 mIoU）；预训练学到的 B̂ 可双三次插值迁移到不同窗口尺寸（02/03）"
+      origin: "沿袭已有做法（笔记：'we follow ... by including a relative position bias'）"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: swin_mixer
+      name: "Swin-Mixer（组织方案输出给 all-MLP）"
+      detail: "把层次化设计 + 移位窗口方案搬给不用注意力的 all-MLP 架构：81.3% vs MLP-Mixer 76.4%（预算 10.4G vs 12.7G），且优于 ResMLP 的速度-精度权衡——'真正值钱的不是注意力本身，而是窗口的组织方式'（04_结论与附录精华.md）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/04_结论与附录精华.md"
+    - id: gap_classification_head
+      name: "GAP 替代 class token（分类头）"
+      detail: "分类不在最后一个 stage 输出上加 class token，而是施加全局平均池化 + 线性分类器，'与 ViT、DeiT 那样使用额外的 class token 同样精确'——主线 D（Registers/LAST-ViT）后续才发现 CLS token 聚合行为有毛病（懒惰聚合、背景污染），Swin 早早绕开了（04_结论与附录精华.md）"
+      origin: "本文"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/04_结论与附录精华.md"
+  depends:
+    - id: vit_patch_splitting
+      name: "ViT 式 patch 切分"
+      detail: "'像 ViT 一样，通过 patch 切分模块把输入 RGB 图像切成不重叠的 patch'，每 patch 当作 token；关键数字差异是 patch 尺寸 4×4（ViT 是 16×16），起始分辨率 H/4×W/4，保留细粒度底层信息，是接密集预测的前提"
+      origin: "ViT"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: deit_training_recipe
+      name: "DeiT 训练配方"
+      detail: "常规 1K 训练基本沿用 DeiT 配方：AdamW、300 epochs、余弦衰减、20 epochs 线性热身、batch 1024，增强照单全收（RandAugment、Mixup、CutMix、随机擦除、随机深度）；但特意剔除 repeated augmentation 与 EMA——DeiT 离了 repeated augmentation 会训练不稳，Swin 不需要，'架构在替配方减负'"
+      origin: "DeiT"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+    - id: resnet_vgg_resolution_alignment
+      name: "ResNet/VGG 分辨率对齐"
+      detail: "'这些 stage 共同产生层次化表示，其特征图分辨率与典型卷积网络（如 VGG 和 ResNet）相同'——刻意对齐 {H/4, H/8, H/16, H/32}，下游代码几乎不用改，骨干即插即换"
+      origin: "ResNet / VGG"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: transformer_block_recipe
+      name: "标准 Transformer 块配方（含残差）"
+      detail: "Swin 块 = Pre-LN + 两层 MLP 带 GELU + 每模块后残差连接，即标准 Transformer 块配方，'唯一的改动只有一处：把全局 MSA 换成基于移位窗口的 MSA'——改动极小、其余照旧，是好复现好移植的原因"
+      origin: "Transformer"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+    - id: fpn
+      name: "FPN（特征金字塔网络）"
+      detail: "'有了这些层次化特征图，Swin Transformer 模型便可以便利地利用特征金字塔网络（FPN）或 U-Net 等密集预测的先进技术'——多级汇报通道对接的下游技术"
+      origin: "FPN"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/01_摘要与引言.md"
+    - id: unet
+      name: "U-Net"
+      detail: "与 FPN 并列的密集预测对接对象：层次化特征图让'FPN、U-Net 这些多级汇报通道才能接得上'（01_摘要与引言.md）"
+      origin: "U-Net"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/01_摘要与引言.md"
+  datasets:
+    - name: "ImageNet-1K"
+      scale: "常规 1K 训练"
+      role: "pretrain+eval"
+      metrics: "81.3（Swin-T）/ 83.5（Swin-B, 224²）/ 87.3（Swin-L, 22K 预训练）top-1"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+    - name: "ImageNet-21K"
+      role: "pretrain"
+      metrics: "给 Swin-B 带来 1.8~1.9 个点增益；AdamW、90 epochs、batch 4096，再在 1K 上微调 30 epochs"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+    - name: "COCO 2017"
+      scale: "118K 训练 / 5K 验证 / 20K test-dev"
+      role: "eval"
+      metrics: "58.7 box AP / 51.1 mask AP（test-dev，新 SOTA）；四框架只换骨干 +3.4~4.2"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+    - name: "ADE20K"
+      scale: "150 类，20K 训练 / 2K 验证 / 3K 测试"
+      role: "eval"
+      metrics: "53.5 mIoU（val，UperNet 框架，新 SOTA）"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+  problems:
+    - id: swin_scale_variation
+      description: "视觉元素的尺度可以差异极大，而已有 Transformer 模型的词元都是固定尺度，'这一性质不适合这些视觉应用'（尤其目标检测）"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/01_摘要与引言.md"
+    - id: vit_quadratic_complexity
+      description: "语义分割等像素级密集预测任务要求在高分辨率图像上运行，而 Transformer 自注意力计算复杂度相对图像尺寸是二次方的，'这对 Transformer 在高分辨率图像上是难以处理的'"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/01_摘要与引言.md"
+    - id: vit_single_lowres_featuremap
+      description: "ViT/DeiT 只产生单一低分辨率特征图，'不适合在密集视觉任务或高分辨率输入下用作通用骨干网络'；DeiT 接检测/分割须按 SETR 的做法用反卷积层强行搭出层次特征图，分割 44.0 mIoU 甚至不如 ResNet-101 的 44.9"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+  relates:
+    - to: vit
+      rel_type: IMPROVES
+      detail: "ViT 的两道坎：要私有大数据（已由 DeiT 治）、单一低分辨率特征图 + 二次复杂度（本文来治）——把 ViT 从'分类样板间'改造成检测/分割都能接的通用骨干网"
+      evidence: "its architecture is unsuitable for use as a general-purpose backbone network on dense vision tasks or when the input image resolution is high, due to its low-resolution feature maps and the quadratic increase in complexity with image size"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+      confidence: high
+    - to: deit
+      rel_type: SUPERSEDES
+      detail: "同档位 FLOPs 稳定赢 +1.4~1.5 个点（分类），检测/分割优势更大（+2.5 box / +5.3 mIoU），且 DeiT 推理慢的根因正是二次复杂度"
+      evidence: "Compared to the previous state-of-the-art Transformer-based architecture, i.e. DeiT, Swin Transformers noticeably surpass the counterpart DeiT architectures with similar complexities: +1.5% for Swin-T (81.3%) over DeiT-S (79.8%)"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+      confidence: high
+    - to: deit
+      rel_type: INHERITS
+      detail: "训练配方基本沿用 DeiT（AdamW、300 epochs、余弦衰减、RandAugment/Mixup/CutMix 等照单全收），但删掉 repeated augmentation 与 EMA——'层级化 + 局部窗口的归纳偏置让优化本身更容易稳住，架构在替配方减负'"
+      evidence: "We include most of the augmentation and regularization strategies of [63] in training, except for repeated augmentation and EMA, which do not enhance performance. Note that this is contrary to [63] where repeated augmentation is crucial to stabilize the training of ViT."
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+      confidence: high
+    - to: convnext
+      rel_type: CORROBORATES
+      detail: "归纳偏置/宏观组织立场呼应：本文说'鼓励某种平移不变性的归纳偏置对通用视觉建模仍然更可取，尤其对密集预测任务'；Swin-Mixer 与 ConvNeXt 隔空咬合——'一篇说组织方式搬到纯 MLP 也赢，一篇说配方搬到纯 CNN 也赢，共同把架构的宏观组织与设计推上功劳簿'"
+      evidence: "we find that inductive bias that encourages certain translation invariance is still preferable for general-purpose visual modeling, particularly for the dense prediction tasks of object detection and semantic segmentation"
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+      confidence: high
+    - to: detr
+      rel_type: CORROBORATES
+      detail: "相关工作里特意声明与 DETR 这类'Transformer 做检测头'的工作互补，等于提前给'Swin 骨干 + DETR 头'组合留好接口——本文做主菜（骨干网），DETR 做餐具"
+      evidence: "Our work explores the adaptation of Transformers for basic visual feature extraction and is complementary to these works."
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/02_方法.md"
+      confidence: high
+    - to: setr
+      rel_type: SUPERSEDES
+      detail: "分割战场以更小模型（234M vs 308M）超越 SETR +3.2 mIoU，刷新 ADE20K SOTA；SETR 用 ViT-Large 直出+上采样硬做密集任务，被评'能做但表现较次'"
+      evidence: "Our Swin-L model with ImageNet-22K pre-training achieves 53.5 mIoU on the val set, surpassing the previous best model by +3.2 mIoU (50.3 mIoU by SETR which has a larger model size)."
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/03_实验与消融.md"
+      confidence: high
+    - to: mlp_mixer
+      rel_type: SUPERSEDES
+      detail: "Swin-Mixer（把层次化+移位窗口搬给 all-MLP 架构）81.3% vs MLP-Mixer 76.4%，计算预算还略小——证明'真正值钱的是窗口的组织方式而非注意力本身'，层次化设计与移位窗口方案可泛化"
+      evidence: "Swin-Mixer performs significantly better than MLP-Mixer (81.3% vs. 76.4%) using slightly smaller computation budget (10.4G vs. 12.7G)."
+      source: "paper-reading-notes/2026/08/swin-paper/精读笔记/04_结论与附录精华.md"
+      confidence: high
+  belongs_to:
+    - topic: t_vit_line_b
+      order: 3
+      source: "paper-reading-notes/ViT分支阅读路线图.md"
