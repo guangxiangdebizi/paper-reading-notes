@@ -76,6 +76,7 @@
 
 - [ViT 分支阅读路线图](./ViT分支阅读路线图.md)：以 ViT 为根的整条脉络，四条主线（DeiT → ConvNeXt / Swin → DETR / MAE / Registers → LAST-ViT），含各篇因果链与进度。
 - [ViT 家族拓展阅读路线图](./ViT家族拓展阅读路线图.md)：主线读完后的下游拓展（2022–2026），按架构演进/自监督/多模态基础模型/Scaling/挑战者五条支线登记，共 36 篇候选，仅登记清单、暂不精读。
+- [Mamba 视觉链路阅读路线图](./Mamba视觉链路阅读路线图.md)：选择性状态空间模型（SSM）在 CV 侧的完整链路——上游源头（S4 → Mamba → Mamba-2/3）→ 视觉骨干（Vim / VMamba 双主干 + 扫描设计/混合架构/对照组 MambaOut）→ 视频/复原/分割/检测/多模态下游，共 35 篇登记（venue 双渠道核实，待核实项显式标注），只登记不精读；精读一篇再按 SCHEMA_SPEC 入图一篇（不预插 catalog）。
 - [视频抽帧压帧分支阅读路线图](./视频抽帧压帧分支阅读路线图.md)：把一整段视频变成几张有信息量的图片——镜头检测 → 光流 → 冗余剔除 → 关键帧/视频摘要 → 神经压缩 → VLM 帧采样，含顶会顶刊与阅读顺序。
 - [颜色重叠多图复用分支阅读路线图](./颜色重叠多图复用分支阅读路线图.md)：图形学合成 → 逆合成/分层 → 计算成像 multiplex → neural multi-image hiding → ViT/VLM token reduction → LaSt-ViT；重点审计 DeepMIH/ISN/InvMIHNet 撞车边界、clean competence gate 与真实 token/成本路线。
 - [小模型vs大模型阅读链路](./小模型vs大模型阅读链路.md)：源自"过拟合与数据规模"讨论的独立链路——scaling law / 双下降 → 蒸馏与合成数据 → 算力分配 → benchmark 幻觉 → 剪枝冗余，清单只收顶会顶刊（9 篇），预印本与 workshop 文献归入背景文献供查证；将"条件拉齐则大模型必赢"立为阅读假设，逐篇验证。
